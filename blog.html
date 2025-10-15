@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>rLLM Project - Blog</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Add favicon -->
+  <link rel="icon" type="image/x-icon" href="images/rllm_logo/icon.png">
+</head>
+<body>
+
+  <!-- ========== HEADER / NAVBAR ========== -->
+  <header>
+    <div class="logo">
+      <a href="index.html" class="logo-container">
+        <img src="images/rllm_logo/rllm_logo_light.png"
+             alt="rLLM Logo"
+             class="logo-img"
+             id="logo" />
+        <!-- <h1 class="logo-text">rLLM</h1> -->
+      </a>
+      <button class="theme-toggle-btn" id="themeToggleBtn">
+        <span class="toggle-icon">☾</span>
+        <span class="toggle-label">Light Mode</span>
+      </button>
+    </div>
+  
+    <nav class="nav-bar">
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-btn">Home</a></li>
+        <li><a href="blog.html" class="nav-btn active">Blog</a></li>
+      </ul>
+    </nav>      
+  </header>
+  <!-- ========== BLOG POSTS SECTION ========== -->
+  <section class="blog-list">
+    <h1>Blog Posts</h1>
+    
+    <div class="year-label">2025
+    <div class="posts-list">
+
+    <article class="blog-post">
+      <div class="date">
+        <h2>Oct<sup>2</sup></h2>
+      </div>
+      <div class="post-content">
+        <h3>
+          <a href="post.html?post=rllm_v0.2.md">
+            rLLM v0.2: RL Training for General Agentic Programs
+          </a>
+        </h3>
+        <p class="post-meta">
+          Oct 2, 2025 | 12 min read | Tianhao Wu, Sijun Tan
+        </p>
+      </div>
+    </article>
+
+    <article class="blog-post">
+      <div class="date">
+        <h2>Oct<sup>2</sup></h2>
+      </div>
+      <div class="post-content">
+        <h3>
+          <a href="post.html?post=pepper.md">
+            Pepper: A Real-time, Event-Driven Architecture for Proactive Agentic Systems
+          </a>
+        </h3>
+        <p class="post-meta">
+          Oct 2, 2025 | 13 min read | Tianhao Wu, Sijun Tan
+        </p>
+      </div>
+    </article>
+
+    <article class="blog-post">
+      <div class="date">
+        <h2>July<sup>1</sup></h2>
+      </div>
+      <div class="post-content">
+        <h3>
+          <a href="https://pretty-radio-b75.notion.site/rLLM-A-Framework-for-Post-Training-Language-Agents-21b81902c146819db63cd98a54ba5f31">
+            rLLM: Reinforcement Learning for Language Agents
+          </a>
+        </h3>
+        <p class="post-meta">
+          Date: July 2, 2025 | Estimated Reading Time: 10 min | Author: Sijun Tan, Michael Luo, Colin Cai
+        </p>
+      </div>
+    </article>
+
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer>
+    <p>© 2025 rLLM Project</p>
+  </footer>
+
+  <script>
+  const themeToggleBtn = document.getElementById('themeToggleBtn');
+  const body = document.body;
+  const logo = document.getElementById('logo');
+  const toggleIcon = document.querySelector('.toggle-icon');
+  const toggleLabel = document.querySelector('.toggle-label');
+
+  // Function to update image sources based on theme
+  function updateLogoAndIcons(theme) {
+    if (theme === 'light') {
+      logo.src = "images/rllm_logo/rllm_logo_light.png"; // Light mode logo
+    } else {
+      logo.src = "images/rllm_logo/rllm_logo_dark.png"; // Dark mode logo
+    }
+  }
+
+  // Check stored theme in localStorage
+  let savedTheme = localStorage.getItem('theme');
+
+  // If no theme is set, default to light
+  if (!savedTheme) {
+    savedTheme = 'light';
+    localStorage.setItem('theme', 'light');
+  }
+
+// Apply the stored theme on page load
+if (savedTheme === 'light') {
+  body.classList.add('light-mode');
+  toggleIcon.textContent = '☾'; // Moon icon for light mode
+  toggleLabel.textContent = 'Dark Mode';
+  updateLogoAndIcons('light');
+} else {
+  body.classList.remove('light-mode');
+  toggleIcon.textContent = '☀\uFE0E'; // Sun icon for dark mode with text style modifier
+  toggleLabel.textContent = 'Light Mode';
+  updateLogoAndIcons('dark');
+}
+
+  // Event listener for theme toggle
+  themeToggleBtn.addEventListener('click', () => {
+    body.classList.toggle('light-mode');
+    let newTheme = body.classList.contains('light-mode') ? 'light' : 'dark';
+    localStorage.setItem('theme', newTheme);
+    toggleIcon.textContent = newTheme === 'light' ? '☾' : '☀';
+    toggleLabel.textContent = newTheme === 'light' ? 'Dark Mode' : 'Light Mode';
+    updateLogoAndIcons(newTheme);
+  });
+</script>
+</body>
+</html>

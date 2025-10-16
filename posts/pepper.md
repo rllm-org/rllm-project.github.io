@@ -14,7 +14,7 @@ We introduce [**Pepper**](https://github.com/agentica-org/pepper), a real-time, 
 
 </aside>
 
-![Traditional chatbots (right) wait for user prompts, while Pepper (left) runs in a continuous, event-driven loop—ingesting inputs, acting autonomously, and proactively engaging with the user.](posts/pepper/pepper-arch.png)
+![Traditional chatbots (right) wait for user prompts, while Pepper (left) runs in a continuous, event-driven loop—ingesting inputs, acting autonomously, and proactively engaging with the user.](assets/pepper/pepper-arch.png)
 
 ## From Reactive Chatbots to Proactive Assistants
 
@@ -84,7 +84,7 @@ For example, the following sequence is invalid in the standard paradigm because 
 
 This blocking behavior is especially problematic for long-running tools—such as complex data analysis functions or external agentic systems—which can stall the event loop and introduce significant latency.
 
-![Sync tool call requires the tool's result to be fully returned and processed by the LLM before it can accept a new user message, which causes a large, perceptible delay for the user. In contrast, our async tool call replies to the user immediately, resulting in no delay.](posts/pepper/tool-call.png)
+![Sync tool call requires the tool's result to be fully returned and processed by the LLM before it can accept a new user message, which causes a large, perceptible delay for the user. In contrast, our async tool call replies to the user immediately, resulting in no delay.](assets/pepper/tool-call.png)
 
 **Our Solution: Asynchronous Tool Call**
 
@@ -275,7 +275,7 @@ We’re open-sourcing Pepper and committed to growing it with the community to p
 
 ### Acknowledgement
 
-This work is done with the Agentica team as part of Berkeley Sky Computing Lab. Agentica is supported by Laude Institute, as well as compute grants from AWS and Hyperbolic.
+This work is done with the rLLM team as part of Berkeley Sky Computing Lab. rLLM is supported by Laude Institute, as well as compute grants from AWS and Hyperbolic.
 
 ### References
 

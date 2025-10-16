@@ -10,7 +10,7 @@ citation_key: "rllm2025v0.2"
 
 **TL;DR**
 
-We are excited to release **rLLM v0.2**, a major upgrade of our RL training framework. In v0.1, rLLM provided agent and OpenAI Gym-like environment abstractions to support training ReACT-style agents. In v0.2, we introduce `AgentWorkflowEngine` and `AgentWorkflowTrainer`—more general abstractions that enable arbitrary agentic programs to be trained. Agent builders and researchers can now define multi-agent systems, complex workflows (e.g., solver-judge, planner executor, MCTS), and agentic programs with custom reward functions, and train them with reinforcement learning **without rewriting their production code**.
+We are excited to release **rLLM v0.2**, a major upgrade of our RL training framework. In v0.1, rLLM provided agent and OpenAI Gym-like environment abstractions to support training ReACT-style agents. In v0.2, we introduce `AgentWorkflowEngine` and `AgentWorkflowTrainer`—more general abstractions that **enable arbitrary agentic programs to be trained**. Agent builders and researchers can now define multi-agent systems, complex workflows (e.g., solver-judge, planner executor, MCTS), and agentic programs with custom reward functions, and train them with reinforcement learning **without rewriting their production code**.
 
 👨‍💻 [Github](https://github.com/rllm-org/rllm)  |  📖 [Docs](https://rllm-project.readthedocs.io/en/stable/)  |  💬 [Discord](https://discord.gg/BDH46HT9en)
 
@@ -318,4 +318,4 @@ rLLM was originally developed by Sijun Tan, Michael Luo, and Colin Cai together 
 The rLLM project is advised by Chenguang Wang, Li Erran Li, Raluca Ada Popa, and Ion Stoica.
 
 ## Acknowledgement
-The rLLM project is generously supported by grants from Laude Institute, Hyperbolic, and AWS. We also thank Together AI for the research partnership and compute support. 
+The rLLM project is generously supported by grants from Laude Institute, Hyperbolic, Fireworks, and AWS. We also pay special thanks to Together AI for the research partnership and compute support. 

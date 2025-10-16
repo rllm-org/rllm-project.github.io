@@ -7,7 +7,6 @@ citation_key: "rllm2025v0.2"
 ---
 
 <aside>
-🔥 
 
 **TL;DR**
 

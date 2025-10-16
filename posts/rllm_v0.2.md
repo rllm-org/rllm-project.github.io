@@ -10,7 +10,7 @@ citation_key: "rllm2025v0.2"
 
 **TL;DR**
 
-We are excited to release **rLLM v0.2**, a major upgrade of our RL training framework. In v0.1, rLLM provided agent and OpenAI Gym-like environment abstractions to support training ReACT-style agents. In v0.2, we introduce `AgentWorkflowEngine` and `AgentWorkflowTrainer`—more general abstractions that **enable arbitrary agentic programs to be trained**. Agent builders and researchers can now define multi-agent systems, complex workflows (e.g., solver-judge, planner executor, MCTS), and agentic programs with custom reward functions, and train them with reinforcement learning **without rewriting their production code**.
+We are excited to release **rLLM v0.2**, a major upgrade of our RL training framework. In v0.1, rLLM provided agent and OpenAI Gym-like environment abstractions to support training ReACT-style agents. In v0.2, we introduce `AgentWorkflowEngine` and `AgentWorkflowTrainer`—more general abstractions that **enable arbitrary agentic programs to be trained**. Agent builders and researchers can now define multi-agent systems, complex workflows (e.g., solver-judge, planner executor, MCTS), and agentic programs with custom reward functions, and train them with reinforcement learning without rewriting their production code.
 
 👨‍💻 [Github](https://github.com/rllm-org/rllm)  |  📖 [Docs](https://rllm-project.readthedocs.io/en/stable/)  |  💬 [Discord](https://discord.gg/BDH46HT9en)
 
@@ -296,7 +296,7 @@ We ran a toy training experiment on the Countdown task using `Qwen3-0.6B` as the
 
 This example demonstrates the end-to-end process of building and training an agentic workflow with rLLM. You can easily modify this setup to explore different workflow variants, tasks, or reward functions — with minimal changes to the code. 
 
-**Note**: You can find the codes for this example [here](https://github.com/rllm-org/rllm/tree/main/examples/solver_judge).
+**Note**: You can find the code for this example [here](https://github.com/rllm-org/rllm/tree/main/examples/solver_judge).
 
 ## Towards Building the RL Application Stack
 

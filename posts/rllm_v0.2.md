@@ -2,7 +2,7 @@
 title: "rLLM v0.2: RL Training over General Agentic Programs"
 author: "Sijun Tan, Kyle Montgomery and the rLLM Team"
 author_line: "Sijun Tan, Kyle Montgomery, and the rLLM Team"
-date: "2025-10-08"
+date: "2025-10-16"
 citation_key: "rllm2025v0.2"
 ---
 

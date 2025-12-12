@@ -6,9 +6,6 @@ date: "2025-12-10"
 citation_key: "rllm2025sdk"
 ---
 
-
-# rLLM SDK: Training Any Agentic Program without Code Changes
-
 ## TL;DR
 
 Agent engineers and RL researchers speak different languages. Agent engineers build with **API calls**—frameworks like LangGraph, AutoGen, and Claude SDK are just sophisticated wrappers around `client.chat.completions.create()`. RL training, however, requires **token-level data**: token IDs, log probabilities, and trajectories.

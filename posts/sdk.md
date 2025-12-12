@@ -57,13 +57,25 @@ This means you can use **any framework** (LangGraph, AutoGen, etc.) with **minim
 
 ## Tutorials
 
-We provide hands-on tutorials that progressively introduce more complex agent patterns:
+We provide hands-on tutorials that progressively introduce more complex agent patterns. Each tutorial demonstrates significant performance improvements through RL training:
 
-| Tutorial | Complexity | What You'll Learn |
-|----------|------------|-------------------|
-| **[Simple Math Agent](https://rllm-project.readthedocs.io/en/latest/examples/sdk_math/)** | Beginner | Basic `get_chat_client()`, single-step rollouts, trainer setup |
-| **[Solver-Judge Workflow](https://rllm-project.readthedocs.io/en/latest/examples/sdk_solver_judge/)** | Intermediate | `@trajectory` decorator, multi-agent composition, per-step rewards |
-| **[LangGraph RAG Agent](https://rllm-project.readthedocs.io/en/latest/examples/sdk_langgraph_rag/)** | Advanced | LangChain integration, multi-turn tracing, tool-using agents |
+### [Simple Math Agent (Beginner)](https://rllm-project.readthedocs.io/en/latest/examples/sdk_math/)
+
+**What You'll Learn:** Basic `get_chat_client()`, single-step rollouts, trainer setup
+
+![](../assets/rllm/math_curve.png)
+
+### [Solver-Judge Workflow (Intermediate)](https://rllm-project.readthedocs.io/en/latest/examples/sdk_solver_judge/)
+
+**What You'll Learn:** `@trajectory` decorator, multi-agent composition, per-step rewards
+
+![](../assets/rllm/solver_judge_curve.png)
+
+### [LangGraph RAG (Advanced)](https://rllm-project.readthedocs.io/en/latest/examples/sdk_langgraph_rag/)
+
+**What You'll Learn:** LangChain integration, multi-turn tracing, tool-using agents
+
+![](../assets/rllm/langgraph_curve.png)
 
 ---
 

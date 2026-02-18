@@ -1,11 +1,9 @@
 ---
 title: "rLLM-FinQA: How a 4B Model Outperforms 235B and Rivals Gemini 2.5 Pro on Financial Analysis"
-author: "the rLLM team x Snorkel AI"
+author: "Manan Roongta, Sijun Tan, Bhavishya Pohani, Charles Dickens, Christopher Glaze"
 author_line: "Manan Roongta, Sijun Tan, Bhavishya Pohani, Charles Dickens, Christopher Glaze"
 date: "2026-02-18"
 citation_key: "rllm2026finqa"
-github: "https://github.com/rllm-org/rllm/tree/main/projects/finqa"
-huggingface: "https://huggingface.co/rLLM/rLLM-FinQA-4B"
 ---
 
 <aside>
@@ -191,9 +189,9 @@ The model shows rapid adaptation in the first 60 steps, with validation accuracy
 | :--- | :--- |
 | **Hardware** | 8× H100 (single node) |
 | **Wall-Clock Time** | ~21 hours |
-| **Compute Cost** | ~$420 (21 hrs × 8 GPUs × $2.50/hr) |
-| **Judge API Cost** | ~$40 (via Portkey) |
-| **Total Cost** | **<$500** |
+| **Compute Cost** | ~<span>$</span>420 (21 hrs × 8 GPUs × <span>$</span>2.50/hr) |
+| **Judge API Cost** | ~<span>$</span>40 (via Portkey) |
+| **Total Cost** | **<<span>$</span>500** |
 
 *Full training configuration is available in [Training Configuration](#training-configuration).*
 
@@ -201,7 +199,7 @@ The model shows rapid adaptation in the first 60 steps, with validation accuracy
 
 ### FinQA: Specialist vs. Generalist
 
-Our primary question was simple: can a 4B model, armed with specialized tools and training, compete with a model 60x its size?
+Our central question: can a 4B model, armed with specialized tools and training, compete with a model 60x its size?
 
 The answer is yes. We evaluate all models on Snorkel AI's expert-curated FinQA benchmark (290 samples), which tests agentic financial analysis over real SEC filings.
 
@@ -215,11 +213,11 @@ The answer is yes. We evaluate all models on Snorkel AI's expert-curated FinQA b
 | GPT-4.1 | — | 62.7% |
 | o3-mini | — | 63.8% |
 
-**rLLM-FinQA-4B** outperforms `Qwen3-235B-A22B` and performs comparably to Gemini 2.5 Pro — despite being a fraction of the size. Scaling parameters alone does not close the gap that specialized training creates on structured, tool-heavy tasks.
+**rLLM-FinQA-4B** more than doubles the base model's accuracy (59.7% vs 27.9%), outperforms `Qwen3-235B-A22B` (51.4%), and performs comparably to Gemini 2.5 Pro (60.6%) — despite being a fraction of the size. Scaling parameters alone cannot match the advantage that specialized training creates on structured, tool-heavy tasks.
 
 ### FinQA-Reasoning: Domain Generalization
 
-A natural concern is whether this performance is brittle — does the model only handle the exact task type it was trained on? To test this, we evaluate on **FinQA-Reasoning** (79 samples), a harder subset requiring multi-step joins across multiple tables. Critically, our model was trained exclusively on single-table queries and has never seen multi-table reasoning during training.
+A natural concern is whether these performance gains transfer to harder problems. We evaluate on Snorkel AI's expert-curated **FinQA-Reasoning** benchmark (79 samples), which tests the same class of financial analysis but requires multi-step joins across multiple tables. Critically, our model was trained exclusively on single-table queries.
 
 | Model | Size | Pass@1 |
 | :--- | :--- | :--- |
@@ -231,7 +229,7 @@ A natural concern is whether this performance is brittle — does the model only
 | Gemini 2.5 Pro | — | 34.6% |
 | GPT-4.1 | — | 37.9% |
 
-The base 4B model collapses on multi-table reasoning (13.9%). Our fine-tuned model does not. Learning reliable tool use on simple, single-table data transfers directly to complex multi-table reasoning — without any explicit training on multi-table examples. We investigate why in [Ablation: Training Data Complexity](#finding-1-simple-data-teaches-complex-skills).
+The base 4B model performs poorly on multi-table reasoning (13.9%). Our fine-tuned model nearly doubles that to 26.6%, surpassing Qwen3-235B and matching gpt-5-nano. The tool-use discipline learned on simple, single-table queries generalizes directly — no explicit training on multi-table examples was needed. We investigate why in [Finding 1: Simple Data Teaches Complex Skills](#finding-1-simple-data-teaches-complex-skills).
 
 ### BFCL: General Tool-Calling Capability
 
@@ -245,16 +243,16 @@ Domain specialization is only valuable if it doesn't come at the cost of general
 | Multi Turn | 21.75% | 20.88% |
 | Memory | 23.66% | 19.14% |
 
-Our fine-tuned model shows slight improvement on general tool-calling ability compared to the base model (35.65% vs 35.02%). Specialization for financial analysis did not erode the model's broader tool-use competence.
+Overall accuracy is computed across all BFCL categories; we highlight a small subset above. Our fine-tuned model shows a slight improvement over the base model (35.65% vs 35.02%), with minor gains on Multi Turn (+0.87%) and Memory (+4.52%). Specialization for financial analysis did not erode the model's broader tool-use competence.
 
 ## Ablation Studies: Less is More
 We ran ablations to isolate *what* drove this performance. The results challenged two common assumptions in LLM training.
 
-*All ablation experiments are evaluated on our internal validation set using a different LLM-based judge, under identical conditions across all settings. These numbers are intended for relative comparison between training configurations and should not be directly compared to the Snorkel FinQA benchmark results reported above.*
+*All ablations are evaluated on our internal validation set. These numbers are intended for relative comparison between configurations and should not be directly compared to the Snorkel FinQA benchmark results above.*
 
 ### Finding 1: Simple Data Teaches Complex Skills
 
-We assumed that to solve multi-table reasoning tasks, we needed to train on expensive, complex multi-table examples. We tested this by comparing three training data strategies.
+We assumed that to solve multi-table reasoning tasks, we needed to train on expensive, complex multi-table examples.
 
 | Training Data | Internal Pass@1 |
 | :--- | :--- |
@@ -264,14 +262,11 @@ We assumed that to solve multi-table reasoning tasks, we needed to train on expe
 
 The single-table-only configuration outperformed both alternatives. Adding multi-table data introduced noise and increased training time without improving the core skill. Even curriculum learning — starting simple and gradually increasing complexity — offered no significant gain over the simpler approach.
 
-This explains the generalization result from [Section 5b](#finqa-reasoning-domain-generalization): the model trained exclusively on single-table data transferred directly to complex multi-table reasoning because the bottleneck was never reasoning depth — it was tool-use reliability. Once the model mastered the fundamentals of SQL syntax and schema adherence via simple examples, it could compose those skills into complex multi-step joins without explicit training.
+This explains the generalization result from [FinQA-Reasoning](#finqa-reasoning-domain-generalization). The bottleneck was never reasoning depth — it was tool-use reliability. Once the model mastered the fundamentals of schema discovery, SQL syntax, and error recovery via simple single-table examples, it could compose those skills into complex multi-step joins without explicit training.
 
 ### Finding 2: Binary Rewards Outperform Partial Rewards
 
-We used a simple binary correctness reward throughout training: reward = 1 if the final answer matches ground truth, reward = 0 otherwise. A natural question is whether more informative reward signals — rewarding intermediate steps like successful table access or query completeness — could accelerate learning. We tested several alternatives.
-
-
-#### Reward Experiments
+A natural question is whether more informative reward signals — rewarding intermediate steps like successful table access or query completeness — could accelerate learning over the simple binary correctness reward described above.
 
 | Reward Structure | Training Data | Pass@1 |
 | :--- | :--- | :--- |
@@ -280,9 +275,7 @@ We used a simple binary correctness reward throughout training: reward = 1 if th
 | Binary + Multi-Table Rubric | Single + Multi Table | 61.6% |
 | Binary + Curriculum (Single → Multi) | Single + Multi Table | 64.8% |
 
-
-For the multi-table rubric, we designed a fine-grained scoring function with six weighted components:
-
+The most sophisticated variant — the multi-table rubric — used a fine-grained scoring function with six weighted components:
 
 | Component | Weight | Description |
 | :--- | :--- | :--- |
@@ -293,10 +286,7 @@ For the multi-table rubric, we designed a fine-grained scoring function with six
 | Completeness Score | 0.10 | Coverage of required information |
 | Structure Score | 0.05 | Output format adherence |
 
-Despite this investment in reward engineering, all partial reward variants underperformed simple binary correctness.
-
-
-#### Why Partial Rewards Underperformed
+Despite this investment in reward engineering, all partial reward variants underperformed the simplest possible reward: a single binary signal.
 
 To understand why, we analyzed the failure modes of the base model:
 
@@ -306,29 +296,19 @@ To understand why, we analyzed the failure modes of the base model:
 | SQL Error / Calculation Error | ~62% |
 | Other | ~11% |
 
-The base model was already competent at finding the right table (~73% success). By explicitly rewarding intermediate steps like table access, we likely incentivized the model to "game" the easier parts of the task, distracting it from the harder problems.
+The base model was already competent at finding the right table (~73% success). By explicitly rewarding intermediate steps like table access, we incentivized the model to "game" the easier parts of the task, distracting it from the harder problems.
 
 The sparse binary signal forced the model to optimize the *entire* trajectory.
 
+## Conclusion: The Blueprint for the Enterprise Agent
 
-### Conclusion: The Blueprint for the Enterprise Agent
-rLLM-FinQA-4B is a case study in efficiency over scale. For the enterprise, the goal is not to build a model that can write poetry and solve IMO math problems. The goal is to build a "Specialist" that handles proprietary data with 99% reliability.
+rLLM-FinQA-4B is a case study in efficiency over scale. For the enterprise, the goal is not to build a model that can write poetry and solve IMO math problems — it is to build a specialist that handles proprietary data reliably.
 
-Our results suggest that the next wave of AI productivity will not come from larger clusters, but from smaller, agentic specialists that do the "basics" right every single time.
+The deployment economics reinforce this. A 4B model runs on a single GPU, whereas a 235B model requires a multi-node cluster. For organizations processing thousands of analyst queries daily, this specialized approach offers an order-of-magnitude reduction in cost while improving accuracy and ensuring full data sovereignty.
 
+Critically, this methodology extends beyond finance. In healthcare, law, and insurance—anywhere structured data and tool use intersect—the same blueprint applies: convert documents into queryable structures, teach tool-calling fundamentals on simple tasks, verify aggressively, and fine-tune.
 
-<!-- ## The Economics: Why This Matters for Enterprises
-
-Here's the math for a mid-sized financial services firm processing 50,000 analyst queries monthly:
-
-| Option | Annual Cost | Accuracy | Data Privacy |
-|--------|-------------|----------|--------------|
-| GPT-4 API | ~$180,000 | 52% | Data leaves network |
-| Self-hosted 235B | ~$700,000+ | 47% | Private |
-| **rLLM-FinQA-4B** | **<$20,000** | **62%** | **Private** |
-
-That's a **90% cost reduction** with **better performance** and full data sovereignty. -->
-
+The next wave of AI productivity will not come from larger clusters, but from smaller, agentic specialists — trained efficiently, deployed privately, and optimized for the task at hand.
 
 ## Contributors
 
@@ -402,7 +382,7 @@ The rLLM project is advised by **Chenguang Wang**, **Li Erran Li**, **Raluca Ada
 
 | Component | Cost |
 |-----------|------|
-| GPU Compute (8× H100 × 21 hrs @ $2.50/hr) | ~$420 |
-| Judge API Calls (gpt-5-nano) | ~$40 |
-| **Total** | **<$500** |
+| GPU Compute (8× H100 × 21 hrs @ <span>$</span>2.50/hr) | ~<span>$</span>420 |
+| Judge API Calls (gpt-5-nano) | ~<span>$</span>40 |
+| **Total** | **<<span>$</span>500** |
 

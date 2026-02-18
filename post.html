@@ -183,7 +183,7 @@
       let tocHTML = '<ul class="toc-list">';
       
       headings.forEach((heading, index) => {
-        const id = `heading-${index}`;
+        const id = heading.textContent.trim().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
         heading.id = id;
         
         const level = parseInt(heading.tagName.charAt(1));

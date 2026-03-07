@@ -12,7 +12,7 @@ citation_key: "rllm2026opd"
 
 rLLM's [unified trainer](https://x.com/rllm_project/status/2029289280062013452) now supports on-policy distillation (OPD) out of the box through workflow-level precomputed advantages, making it much easier to integrate new training algorithms without modifying the trainer core.
 
-As a concrete example, we reproduce the setup from the [Tinker's blogpost on OPD](https://thinkingmachines.ai/blog/on-policy-distillation/): using Qwen3-32B as the teacher and Qwen3-8B-Base as the student, we improve AIME 2024 accuracy from 51% to 63% in 100 training steps.
+As a concrete example, we reproduce the setup from the [Tinker's blogpost on OPD](https://thinkingmachines.ai/blog/on-policy-distillation/): using Qwen3-32B as the teacher and Qwen3-8B-Base as the student, we improve AIME 2024 accuracy from 51% to 63% in just 100 training steps.
 
 👨‍💻 [Code](https://github.com/rllm-org/rllm/tree/main/examples/math_distill) | 📊 [WandB](https://wandb.ai/kylemontgomery/rllm-opd/runs/5goonudj)
     
@@ -208,7 +208,8 @@ Key configuration flags:
 
 ## Results
 The table below summarizes our main findings:
-
-![training_metrics](../assets/opd/opd.png)
-
+![training_metrics](https://hackmd.io/_uploads/SyvENrR_Wg.png)
 Starting from an SFT checkpoint of Qwen3-8B-Base, we train for 200 steps with OPD. After just 100 steps, accuracy on AIME 2024 improves from 51% to 63%. Meanwhile, the reverse KL converges just under -0.15. 
+
+## Acknowledgement
+The rLLM project is advised by Chenguang Wang, Li Erran Li, Raluca Ada Popa, and Ion Stoica. Moreover, this work was made possible by Tinker research grants from Thinking Machines Lab.

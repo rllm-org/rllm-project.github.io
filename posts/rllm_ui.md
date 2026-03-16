@@ -2,7 +2,7 @@
 title: "rLLM UI: Real-Time Observability Tool for Agent Training & Evaluation"
 author: "Chanbin Park and the rLLM Team"
 author_line: "Chanbin Park and the rLLM Team"
-date: "2026-03-12"
+date: "2026-03-16"
 citation_key: "rllm2026ui"
 ---
 
@@ -135,5 +135,3 @@ On the UI side, a FastAPI backend receives this data and pushes updates to the f
 ## What's Next
 
 We envision rLLM UI to be the central tracing layer for future rLLM features, and will keep releasing new features. Stay tuned!
-
----

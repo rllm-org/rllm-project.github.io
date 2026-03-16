@@ -26,7 +26,7 @@ When training goes wrong, metrics alone don't show the full picture. The natural
 
 We introduce rLLM UI, a web interface that gives you full visibility into your rLLM training and evaluation runs. Here's a snapshot of what the UI looks like for a specific training run:
 
-![snapshot of](https://hackmd.io/_uploads/ByvYCCgqWg.png)
+![rLLM UI dashboard showing metrics and training traces for a training run.](https://hackmd.io/_uploads/ByvYCCgqWg.png)
 
 
 ### 1. View your Training Traces
@@ -51,7 +51,7 @@ When you have hundreds of episodes, manually filtering isn't practical. That's w
 
 Seeing training not improving that much, I asked, *"Which episodes got 0 reward and why did this happen in step 19?"* Here's what the agent concluded:
 
-![agent](https://hackmd.io/_uploads/BkDPqebcWg.png)
+![The observability agent identifying that episodes with 0 reward in step 19 are caused by the model running out of tokens.](https://hackmd.io/_uploads/BkDPqebcWg.png)
 
 
 It correctly identified that the model is running out of tokens, and suggested that the max generation length should be increased. Pretty detailed and helpful, right? What sets it apart from a generic chatbot is that it understands your run, as it has tool access to your training code, training traces, and your configurations.
@@ -65,15 +65,15 @@ You can also view the terminal logs, relevant code, and all configuration at one
 
 Logs appear as you would see it in your terminal:
 
-![logs](https://hackmd.io/_uploads/r1JihAB9Wg.png)
+![Terminal logs captured and displayed in the rLLM UI.](https://hackmd.io/_uploads/r1JihAB9Wg.png)
 
 Relevant code (workflow function and reward function) is extracted when the run starts and is displayed:
 
-![code](https://hackmd.io/_uploads/Bk7cnCHcZl.png)
+![Workflow and reward function code extracted and displayed in the rLLM UI.](https://hackmd.io/_uploads/Bk7cnCHcZl.png)
 
 Both rLLM and backend-specific configs is shown:
 
-![configs](https://hackmd.io/_uploads/rk893RS9Wl.png)
+![rLLM and backend-specific configuration displayed in the rLLM UI.](https://hackmd.io/_uploads/rk893RS9Wl.png)
 
 
 

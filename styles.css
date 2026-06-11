@@ -1,691 +1,559 @@
-/* ========== GLOBAL STYLES ========== */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap");
 
-/* Default (Dark Mode) -- you can store the dark mode in :root,
-   or store them in a .dark-mode class. 
-   We'll store the default in :root as dark mode. 
-*/
 :root {
-  --bg-color: #1d1e20;   /* background color */
-  --text-color: #fff; /* text color */
-  --card-bg: #2e2e33;    /* background for cards / tiles */
-  --card-hover-bg: #2e2e33;
-  --border-color: rgba(128, 128, 128, 0.2); /* More subtle gray with opacity */
-  --link-hover: #ccc;
-  color-scheme: dark light; /* Helps prevent white flash in dark mode */
-  --gray-text: #8b8b8b;  /* Gray for dark mode */
+  color-scheme: light dark;
+  --bg: #ffffff;
+  --bg-subtle: #f6f7f9;
+  --surface: #ffffff;
+  --text: #0b0d12;
+  --text-soft: #3d4452;
+  --muted: #6b7280;
+  --border: #e6e8ec;
+  --border-strong: #d6d9df;
+  --accent: #2f6df6;
+  --accent-ink: #1d4ed8;
+  --accent-soft: rgba(47, 109, 246, 0.1);
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 10px 30px -12px rgba(16, 24, 40, 0.18);
+  --nav-height: 64px;
+  --content-width: min(1180px, 92vw);
+  --radius: 16px;
 }
 
-/* We'll define a .light-mode class to override these vars */
-.light-mode {
-  --bg-color: #f5f5f5;    
-  --text-color: #000;
-  --card-bg: #fff;   /* Changed from #f2f2f2 to white */
-  --card-hover-bg: #fff;  /* Changed from #e6e6e6 to white */
-  --border-color: rgba(128, 128, 128, 0.2); /* Same subtle gray for light mode */
-  --link-color: #1a0dab;
-  --link-hover-color: #551a8b;
-  --gray-text: #666666;  /* Darker gray for light mode */
+body:not(.light-mode) {
+  --bg: #0a0d12;
+  --bg-subtle: #0e131a;
+  --surface: #11161e;
+  --text: #f3f5f8;
+  --text-soft: #c4ccd8;
+  --muted: #8b97a7;
+  --border: #1e2733;
+  --border-strong: #2a3543;
+  --accent: #6ea8ff;
+  --accent-ink: #9ac1ff;
+  --accent-soft: rgba(110, 168, 255, 0.14);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 18px 40px -18px rgba(0, 0, 0, 0.65);
 }
 
-/* Apply these variables */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {
-  background: var(--bg-color);
-  color: var(--text-color);
-  line-height: 1.5;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  padding-top: 45px; /* Reduced from 52px */
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* Links */
 a {
+  color: inherit;
   text-decoration: none;
-  color: var(--text-color);
-  transition: color 0.3s, background 0.3s;
 }
 
-/* Header / Navbar */
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* ============ HEADER / NAV ============ */
 header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.4rem 10%; /* Reduced from 0.5rem */
-  background: var(--bg-color);
-  position: fixed; /* Change from relative to fixed */
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000; /* Ensure header stays above other content */
-  transition: background-color 0.3s ease;
-}
-
-nav ul {
-  list-style: none;
+  z-index: 1000;
+  height: var(--nav-height);
   display: flex;
-  gap: 1rem;
-}
-
-nav ul li a {
-  padding: 0.5rem 0.75rem;
-  border-radius: 0;
-}
-
-.main-paragraph {
-  color: var(--gray-text);
-}  
-
-nav ul li a:hover,
-nav ul li a.active {
-  background: transparent;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 max(1.5rem, calc((100vw - var(--content-width)) / 2));
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--border);
 }
 
 .logo {
   display: flex;
   align-items: center;
-  margin-left: 0; /* Remove the extra margin */
-  position: relative;
-}  
-
-.logo-img {
-  height: 35px;
-  width: auto;
-  display: block; /* Remove any extra space */
-}  
+  gap: 1rem;
+}
 
 .logo-container {
   display: flex;
-  align-items: center; /* Keep items vertically centered */
-  gap: 4px;
-  text-decoration: none;
-  height: 35px; /* Match logo height */
-  margin-right: 32px; /* Add space for the theme toggle button */
-}
-  
-.logo-text {
-  font-size: 1.4rem;
-  color: var(--text-color);
-  font-weight: bold;
-  margin: 0;
-  line-height: 35px; /* Match logo height */
-  display: flex;
   align-items: center;
-  transition: background-color 0.3s ease, 
-              color 0.3s ease, 
-              border-color 0.3s ease;
-}
-  
-.social-icons {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 12px;
-  margin-top: 0 !important;
-  padding-top: 0px !important;
-  padding-left: 0;
-}
-  
-.social-icon {
-  width: 30px;
-  height: auto;
-  opacity: 0.7;
-  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
 }
 
-/* Specific styles for X logo - only modifying width */
-.social-icon.x-logo {
-  width: 27px;
-  opacity: 0.65;
+.logo-img {
+  height: 30px;
+  width: auto;
 }
 
-/* Specific style for Hugging Face logo */
-.social-icon#huggingface-icon {
-  width: 35px;
-  opacity: 0.65;
-}
-
-/* Hover effects for all icons */
-.social-icon:hover {
-  transform: scale(1.1);
-  opacity: 1 !important;
-}
-
-/* Align Blog/Home buttons and Theme Toggle Button */
 .nav-bar {
   display: flex;
   align-items: center;
-  justify-content: flex-end; /* Align everything to the right */
-  gap: 15px; /* Keeps spacing between elements */
-  height: 50px; /* Ensures navbar height remains fixed */
-  margin-right: 20px; /* Add some margin from the right edge */
+  gap: 0.4rem;
 }
 
 .nav-links {
   list-style: none;
   display: flex;
   align-items: center;
-  gap: 10px; /* Consistent spacing between buttons */
-  margin: 0;
-  padding: 0;
+  gap: 0.15rem;
 }
 
-.nav-links li {
-  margin-right: 0;
-}
-
-/* Update nav button styles */
 .nav-btn {
-  display: inline-block;
-  padding: 8px 15px; /* Reduced from 10px 15px */
-  color: var(--text-color);
-  text-decoration: none;
-  font-weight: normal;
-  font-size: 16px;
-  line-height: 1;
-  min-width: 80px;
-  text-align: center;
-  transition: opacity 0.3s ease;
-  position: relative;
-  background: transparent;
-  border-radius: 0;
+  font-size: 0.92rem;
+  font-weight: 500;
+  padding: 0.45rem 0.85rem;
+  color: var(--muted);
+  border-radius: 9px;
+  transition: color 0.2s ease, background-color 0.2s ease;
 }
 
-/* Add underline for active state */
-.nav-btn.active {
-  color: var(--text-color);
-}
-
-.nav-btn.active::after {
-  content: '';
-  position: absolute;
-  bottom: -2px; /* Adjusted from 6px */
-  left: 15%;
-  width: 70%;
-  height: 2px;
-  background-color: var(--text-color);
-  transition: background-color 0.3s ease;
-}
-
-/* Update hover state */
 .nav-btn:hover {
-  opacity: 0.7;
+  color: var(--text);
+  background: var(--bg-subtle);
 }
 
-/* Hero */
+.nav-btn.active {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9px;
+  color: var(--muted);
+  cursor: pointer;
+  margin-left: 0.35rem;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.theme-toggle-btn .toggle-label {
+  display: none;
+}
+
+.theme-toggle-btn .toggle-icon {
+  font-size: 0.95rem;
+}
+
+/* ============ LAYOUT ============ */
+.page {
+  width: var(--content-width);
+  margin: 0 auto;
+}
+
+/* ============ HERO (HOME) ============ */
 .hero {
-  background: var(--bg-color);
-  padding: 3rem 15% 1.5rem 15%; /* Increased bottom padding from 1rem */
-  text-align: left;
+  width: var(--content-width);
+  margin: 0 auto;
+  padding: 4.5rem 0 2.5rem;
+  border-bottom: 1px solid var(--border);
 }
 
-.hero-text {
-  max-width: none;
-  margin: 0;
-  text-align: left;
-  padding-left: 0; /* Remove the extra padding */
+.hero-eyebrow {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+  margin-bottom: 1rem;
 }
 
 .hero-text h2 {
-  font-size: 2rem;
-  margin-bottom: 0.5rem !important; /* Reduced from 1rem */
-  padding-bottom: 0px !important;
+  font-size: clamp(2.3rem, 5vw, 3.6rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  max-width: 16ch;
+  margin-bottom: 1.1rem;
 }
 
 .hero-text .main-paragraph {
-  margin-bottom: 1.5rem; /* Increased from 1rem */
-  max-width: none;
+  color: var(--text-soft);
+  font-size: 1.18rem;
+  max-width: 60ch;
 }
 
-/* Project Title */
-#project {
-  padding: 1rem 15% 2rem 15%; /* Add back some top padding (was 0) */
+.social-icons {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1.8rem;
 }
 
-#project h2 {
-  display: none; /* Remove "Our Latest Project" heading */
+.social-icon {
+  width: 26px;
+  opacity: 0.7;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-/* Update project card styling for both modes */
-#project a {
-  text-decoration: none;
-  border: none;
-  display: block;
-  padding: 1.5rem;
-  border-radius: 6px;
-  box-shadow: none;
-  background: #2e2e33; /* Darker background */
-  margin-bottom: 20px;
+.social-icon:hover {
+  opacity: 1;
+  transform: translateY(-2px);
 }
 
-#project a:last-of-type {
-  margin-bottom: 0; /* Removes extra margin after last block */
+.social-icon.x-logo {
+  width: 24px;
 }
 
-/* Light mode - white background */
-.light-mode #project a {
-  background: #fff;
+/* ============ SECTION HEADINGS ============ */
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  width: var(--content-width);
+  margin: 3rem auto 1.4rem;
 }
 
-#project-title {
-  color: var(--text-color);
-  font-weight: bold;
+.section-head h2 {
   font-size: 1.5rem;
-  cursor: pointer;
-  margin-bottom: 0.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-#project h3 {
-  margin-bottom: 0.5rem; /* Increased spacing between title and description */
+.section-head .section-link {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--muted);
 }
 
-#project .main-paragraph {
-  margin-bottom: 0.5rem; /* Added spacing between description and date */
-  color: var(--gray-text);
+.section-head .section-link:hover {
+  color: var(--accent-ink);
 }
 
-/* Section Headings */
-section {
-  padding: 2rem 15%;
-  max-width: none;
+/* ============ BLOG PAGE HEADER ============ */
+.blog-hero {
+  width: var(--content-width);
+  margin: 0 auto;
+  padding: 4rem 0 2.4rem;
 }
 
-section h2 {
-  font-size: 1.75rem;
+.blog-hero h1 {
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  margin-bottom: 0.7rem;
+}
+
+.blog-hero p {
+  color: var(--text-soft);
+  font-size: 1.12rem;
+  max-width: 56ch;
+}
+
+/* ============ FEATURED CARD ============ */
+.featured {
+  width: var(--content-width);
+  margin: 0 auto;
+}
+
+.featured-card {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 2.2rem;
+  align-items: center;
+  padding: 1.6rem 0 2.6rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.featured-card .card-cover {
+  aspect-ratio: 16 / 10;
+  border-radius: var(--radius);
+}
+
+.featured-title {
+  font-size: clamp(1.6rem, 2.6vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+  margin: 0.9rem 0;
+}
+
+.featured-title a:hover {
+  color: var(--accent-ink);
+}
+
+.featured-excerpt {
+  color: var(--text-soft);
+  font-size: 1.08rem;
+  margin-bottom: 1.3rem;
+}
+
+/* ============ POST GRID ============ */
+.post-grid {
+  width: var(--content-width);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.8rem 1.6rem;
+  padding-bottom: 3.5rem;
+}
+
+.post-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.post-card-body {
+  padding-top: 1rem;
+}
+
+/* ============ COVERS ============ */
+.card-cover {
+  display: flex;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 13px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+}
+
+.card-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.post-card:hover .card-cover img,
+.featured-card:hover .card-cover img {
+  transform: scale(1.04);
+}
+
+.card-cover--text {
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.1rem 1.25rem;
+  color: #fff;
+  border: none;
+}
+
+.card-cover--text::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 120% at 85% -10%, rgba(255, 255, 255, 0.22), transparent 55%);
+  pointer-events: none;
+}
+
+.cover-mark {
+  position: relative;
+  font-weight: 800;
+  font-size: 0.92rem;
+  letter-spacing: 0.02em;
+  opacity: 0.85;
+  z-index: 1;
+}
+
+.cover-title {
+  position: relative;
+  font-weight: 800;
+  font-size: 1.5rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  z-index: 1;
+}
+
+.featured-card .cover-title {
+  font-size: 2.1rem;
+}
+
+/* gradient palette */
+.g-blue   { background: linear-gradient(135deg, #1e3a8a, #3b82f6); }
+.g-violet { background: linear-gradient(135deg, #4c1d95, #8b5cf6); }
+.g-teal   { background: linear-gradient(135deg, #0f766e, #14b8a6); }
+.g-amber  { background: linear-gradient(135deg, #b45309, #f59e0b); }
+.g-rose   { background: linear-gradient(135deg, #9f1239, #fb7185); }
+.g-slate  { background: linear-gradient(135deg, #1e293b, #64748b); }
+.g-cyan   { background: linear-gradient(135deg, #155e75, #22d3ee); }
+.g-indigo { background: linear-gradient(135deg, #312e81, #6366f1); }
+
+/* ============ TAGS ============ */
+.tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.24rem 0.6rem;
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.tag--research { color: #2563eb; background: rgba(37, 99, 235, 0.08); border-color: rgba(37, 99, 235, 0.2); }
+.tag--release  { color: #7c3aed; background: rgba(124, 58, 237, 0.08); border-color: rgba(124, 58, 237, 0.2); }
+.tag--platform { color: #0d9488; background: rgba(13, 148, 136, 0.08); border-color: rgba(13, 148, 136, 0.2); }
+.tag--news     { color: #d97706; background: rgba(217, 119, 6, 0.08); border-color: rgba(217, 119, 6, 0.2); }
+
+.post-card-title {
+  font-size: 1.16rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  margin: 0.7rem 0 0.5rem;
+}
+
+.post-card-title a:hover {
+  color: var(--accent-ink);
+}
+
+.post-card-excerpt {
+  color: var(--text-soft);
+  font-size: 0.95rem;
+  line-height: 1.55;
   margin-bottom: 1rem;
-  color: var(--text-color);
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.5rem;
-  transition: background-color 0.3s ease, 
-              color 0.3s ease, 
-              border-color 0.3s ease;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/* Remove the border specifically for "Agentica Project" */
-.hero h2 {
-  border-bottom: none !important;
+.post-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-size: 0.82rem;
 }
 
-/* Team / Cards */
+.post-card-authors {
+  color: var(--text-soft);
+  font-weight: 500;
+}
+
+.post-card-date {
+  color: var(--muted);
+}
+
+/* ============ TEAM ============ */
+#team {
+  width: var(--content-width);
+  margin: 0 auto;
+  padding: 1.5rem 0 3.5rem;
+}
+
+#team > h2 {
+  display: none;
+}
+
 .team-group {
-  margin-bottom: 2rem;
+  margin-bottom: 2.6rem;
 }
 
 .team-group h3 {
-  margin-bottom: 0.5rem; /* Reduced from 1rem */
-  font-size: 1.5rem;
-  color: var(--text-color);
-  padding-bottom: 0.5rem;
-  font-weight: bold;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 1.2rem;
 }
 
-/* Update contributors grid layout */
+.team-grid,
 .contributors-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, 180px);
-  gap: 2.5rem;
-  margin-top: 0.5rem; /* Reduced from 1rem */
-  justify-content: center;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1.1rem;
 }
 
-/* Update regular team grid */
-.team-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, 180px);
-  gap: 2.5rem;
-  margin-top: 0.5rem; /* Reduced from 1rem */
-  justify-content: center;
-}
-
-/* Update team member card styling */
 .team-member {
-  background: #2e2e33;
-  border-radius: 6px;
-  text-align: center;
-  width: 170px;
-  height: 170px; /* Reduced from 200px */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.team-member:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
 }
 
 .team-member a {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1.5rem 1rem 1rem 1rem; /* Reduced bottom padding */
-  height: 100%;
+  min-height: 188px;
+  padding: 1.3rem 0.75rem 1rem;
 }
 
 .team-member img {
-  width: 90px;
-  height: 90px;
+  width: 84px;
+  height: 84px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--border-color);
-  margin-bottom: -2rem; /* Adjusted from -3rem */
+  border: 1px solid var(--border);
+  margin-bottom: 0.95rem;
 }
 
 .team-member h4 {
-  margin-top: 3rem; /* Changed from auto */
-  margin-bottom: 0;
-  font-size: 1rem;
-  color: var(--text-color);
-  font-weight: normal;
-}
-
-.team-member p {
-  color: var(--link-hover);
-  font-size: 0.95rem;
-  margin-bottom: 0.5rem;
-}
-
-/* Contact */
-.contact-list {
-  list-style: none;
-  margin-top: 1rem;
-  padding-left: 0;
-}
-
-.contact-list li {
-  margin-bottom: 0.75rem;
-}
-
-.contact-list a {
-  color: var(--text-color);
-  border-bottom: 1px dotted var(--text-color);
-  transition: color 0.2s;
-}
-
-.contact-list a:hover {
-  color: var(--link-hover);
-}
-
-/* Blog Cards */
-.blog-card {
-  background: transparent;
-  border-radius: 0;
-  padding: 0.75rem 0;
-  text-decoration: none;
-  display: block;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.blog-card:hover {
-  transform: none;
-  background: transparent;
-}
-
-.blog-card h3 {
-  margin-bottom: 0.25rem;
-  font-size: 1.25rem;
-  color: var(--text-color);
-  font-weight: normal;
-}
-
-.blog-card p {
-  margin: 0; /* Remove margin to control spacing with padding */
-  color: var(--gray-text);
-}
-
-.blog-card a {
-  color: var(--text-color);
-  font-weight: bold;
-  border-bottom: 1px dotted var(--text-color);
-}
-
-.blog-card a:hover {
-  color: var(--link-hover);
-}
-
-/* Footer */
-footer {
   text-align: center;
-  padding: 1rem 2rem; /* Reduced from 2rem */
-  background: var(--bg-color);
-  color: var(--gray-text);
-  border-top: none;
-  margin-top: 1rem; /* Reduced from 2rem */
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* ============ FOOTER ============ */
+footer {
+  border-top: 1px solid var(--border);
+  margin-top: 1rem;
 }
 
 footer p {
-  opacity: 1; /* Remove opacity since we're using the correct gray */
+  width: var(--content-width);
+  margin: 0 auto;
+  padding: 1.8rem 0;
+  color: var(--muted);
+  font-size: 0.85rem;
 }
 
-/* ===================== THEME TOGGLE BUTTON ===================== */
-/* Theme Toggle Button - adjusted size */
-.theme-toggle-btn {
-  cursor: pointer;
-  padding: 0;
-  background: transparent;
-  color: var(--text-color);
-  border: none;
-  transition: color 0.3s ease, opacity 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 35px; /* Match logo height */
-  min-width: unset;
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  margin: 0;
-  z-index: 1001;
+/* ============ RESPONSIVE ============ */
+@media (max-width: 960px) {
+  .post-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .featured-card {
+    grid-template-columns: 1fr;
+    gap: 1.3rem;
+  }
+  .featured-card .card-cover {
+    aspect-ratio: 16 / 9;
+  }
 }
 
-.theme-toggle-btn:hover {
-  opacity: 0.7;
-}
-
-/* Hide the toggle text */
-.theme-toggle-btn .toggle-label {
-  display: none;
-}
-
-.theme-toggle-btn .toggle-icon {
-  margin: 0;
-  font-size: 1.2rem; /* Slightly smaller */
-  line-height: 35px; /* Match logo height */
-}
-
-/* Remove nav-bar right margin since toggle moved */
-.nav-bar {
-  margin-right: 0;
-}
-
-/* Add transitions to other elements that change color */
-.logo-text,
-.nav-btn,
-.blog-card,
-.team-member,
-section h2,
-.main-paragraph,
-.theme-toggle-btn,
-.hero,
-footer {
-  transition: background-color 0.3s ease, 
-              color 0.3s ease, 
-              border-color 0.3s ease;
-}
-
-/* Update all content within sections */
-section > *,
-.hero-text > *,
-.team-group,
-.blog-list {
-  padding-left: 0;
-  margin-left: 0;
-}
-
-/* Update blog list section */
-.blog-list {
-  padding: 4rem 15% 2rem 15%;
-}
-
-.blog-list h1 {
-  font-size: 2.5rem;  /* Reduced Archive title from 4rem */
-  font-weight: bold;
-  margin-bottom: 3rem;
-  color: var(--text-color);
-}
-
-.year-label {
-  font-size: 4rem;  /* Increased year size from 2.5rem */
-  font-weight: bold;
-  margin-bottom: 2rem;
-  color: var(--text-color);
-}
-
-.year-label sup {
-  font-size: 3rem;  /* Adjusted superscript size */
-  vertical-align: super;
-  margin-left: 0.25rem;
-}
-
-.blog-post {
-  display: flex;
-  gap: 2rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--border-color);
-  align-items: center;
-  margin-bottom: 0.5rem; /* Added margin between posts */
-}
-
-.blog-post:last-child {
-  border-bottom: none;
-  margin-bottom: 0; /* Remove margin from last post */
-}
-
-.blog-post .date h2 {
-  font-size: 1.5rem;  /* Reduced month size from 2rem */
-  font-weight: bold;
-  margin: 0;
-  border: none;
-  min-width: 180px;
-  color: var(--text-color);
-}
-
-.blog-post .date sup {
-  font-size: 0.8rem;  /* Adjusted month superscript */
-  vertical-align: super;
-  margin-left: 0.25rem;
-}
-
-.post-content h3 {
-  font-size: 1.5rem;  /* Reduced post title from 2rem */
-  font-weight: normal;
-  margin-bottom: 0.5rem;
-  color: var(--text-color);
-}
-
-.post-meta {
-  font-size: 0.9rem;
-  color: var(--gray-text);
-  margin: 0;
-  font-weight: normal;
-}
-
-/* Remove any borders or backgrounds */
-.blog-card {
-  background: transparent;
-  border: none;
-  padding: 0;
-}
-
-/* Hover effects */
-.post-content h3:hover {
-  opacity: 0.7;
-  cursor: pointer;
-}
-
-/* Hide the team section heading */
-#team > h2 {
-  display: none;
-}
-
-/* Adjust spacing for team section without heading */
-#team {
-  padding-top: 1rem; /* Reduced padding since we removed the heading */
-}
-
-/* Update for light mode */
-.light-mode .team-member {
-  background: #fff;
-}
-
-.light-mode .team-member:hover {
-  background: #e0e0e0;
-}
-
-/* Update light mode card backgrounds */
-.light-mode .blog-card {
-  background: transparent;
-}
-
-.light-mode .blog-card:hover {
-  background: transparent;
-}
-
-/* Update blog section styling */
-.year-section {
-  margin-top: 2rem;
-}
-
-.year-header {
-  font-size: 1.5rem;
-  color: var(--text-color);
-  margin-bottom: 1rem;
-  font-weight: bold;
-}
-
-.posts-container {
-  display: block;
-}
-
-.posts-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.date-label {
-  min-width: 100px;
-  display: flex;
-  align-items: center; /* Center vertically */
-}
-
-.date-label .month {
-  color: var(--text-color);
-  font-size: 1.2rem; /* Increased from 1rem */
-  font-weight: bold;
-}
-
-.date-label .number {
-  display: none;
-}
-
-.blog-card {
-  flex: 1;
-  padding: 0;
-  border-bottom: none;
-}
-
-/* Add year label styling */
-.year-label {
-  font-size: 1.5rem;
-  color: var(--text-color);
-  font-weight: bold;
-  margin: 1rem 0 0rem 0; /* Reduced top margin from 2rem to 1rem */
-}
-
-/* Remove the year section styles we don't need anymore */
-.year-section, .year-header {
-  display: none;
+@media (max-width: 620px) {
+  .nav-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.88rem;
+  }
+  .post-grid {
+    grid-template-columns: 1fr;
+    gap: 1.6rem;
+  }
+  .hero {
+    padding: 3rem 0 2rem;
+  }
+  .logo-img {
+    height: 26px;
+  }
 }

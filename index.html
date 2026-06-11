@@ -3,10 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>rLLM Project - Home</title>
-  <!-- Link to CSS -->
+  <title>rLLM Project</title>
   <link rel="stylesheet" href="styles.css" />
-  <!-- Add favicon -->
   <link rel="icon" type="image/x-icon" href="images/rllm_logo/favicon.ico">
 </head>
 <body>
@@ -16,12 +14,7 @@
     <div class="logo">
       <a href="index.html" class="logo-container">
         <img src="images/rllm_logo/rllm_logo_light.png" alt="rLLM Logo" class="logo-img" id="logo">
-        <!-- <h1 class="logo-text">rLLM</h1> -->
       </a>
-      <button class="theme-toggle-btn" id="themeToggleBtn">
-        <span class="toggle-icon">☾</span>
-        <span class="toggle-label">Light Mode</span>
-      </button>          
     </div>
     <nav class="nav-bar">
       <ul class="nav-links">
@@ -29,15 +22,20 @@
         <li><a href="blog.html" class="nav-btn">Blog</a></li>
         <li><a href="team.html" class="nav-btn">Team</a></li>
       </ul>
+      <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle theme">
+        <span class="toggle-icon">☾</span>
+        <span class="toggle-label">Light Mode</span>
+      </button>
     </nav>
   </header>
 
   <!-- ========== HERO / INTRO SECTION ========== -->
   <section class="hero">
     <div class="hero-text">
-      <h2>Welcome to the rLLM Project! 👋 </h2>
+      <span class="hero-eyebrow">Berkeley Sky Computing Lab</span>
+      <h2>Training the next generation of intelligent agents.</h2>
       <p class="main-paragraph">
-        We are an open-source initiative from the Berkeley Sky Computing Lab building the infrastructure for training, evaluating, and evolving intelligent agents at scale.
+        rLLM is an open-source initiative building the infrastructure to train, evaluate, and evolve intelligent agents at scale.
       </p>
       <div class="social-icons">
         <a href="mailto:sijuntan@berkeley.edu">
@@ -53,150 +51,25 @@
     </div>
   </section>
 
-  <!-- ========== PROJECT SECTION ========== -->
-  <section id="project">
-    <!-- Hive -->
-    <a href="https://hive.rllm-project.com" rel="noopener noreferrer">
-      <h3>Hive: Collaborative Agent Evolution Platform</h3>
-      <p class="main-paragraph">
-        Hive is a collaborative platform for evolving and improving agents together. Visit the Hive platform to learn more.
-      </p>
-      <div class="post-meta">Date: March 18, 2026 | Authors: The rLLM Team</div>
-    </a>
-
-    <!-- rLLM UI -->
-    <a href="post.html?post=rllm_ui.md" rel="noopener noreferrer">
-      <h3>rLLM UI: Real-Time Observability Tool for Agent Training & Evaluation</h3>
-      <p class="main-paragraph">
-        We introduce rLLM UI, a real-time observability platform for training and evaluating agents using the rLLM framework. Existing tools show what is happening during training, while rLLM UI shows you why. It lets you inspect exactly what the model generates at every step and interact with an observability agent to pinpoint issues.
-      </p>
-      <div class="post-meta">Date: March 16, 2026 | Estimated Reading Time: 7 min | Authors: Chanbin Park and the rLLM Team</div>
-    </a>
-
-    <!-- OPD -->
-    <a href="post.html?post=opd.md" rel="noopener noreferrer">
-      <h3>rLLM On-Policy Distillation: Training Smaller Students from Stronger Teachers</h3>
-      <p class="main-paragraph">
-        We introduce rLLM On-Policy Distillation (OPD) for training smaller students from stronger teachers. OPD is a form of policy distillation that allows us to train smaller students from stronger teachers by using the teacher's policy to guide the student's training.
-      </p>
-      <div class="post-meta">Date: March 6, 2026 | Estimated Reading Time: 8 min | Authors: Brian Chen, Kyle Montgomery, and the rLLM Team</div>
-    </a>
-
-    <!-- Deep Research -->
-    <a href="post.html?post=deepresearch.md" rel="noopener noreferrer">
-      <h3>Faster and Better: Open-Source Recipe for Deep Research Agents with Fully Async Training</h3>
-      <p class="main-paragraph">
-        We achieve 5× faster training (1 day vs 5 days) for deep research agents by adopting rLLM's fully asynchronous training architecture with three key optimizations: decoupled inference and training groups, partial rollout for long-tail generations, and mini-batch size of 1. We match the "Cut the Bill" baseline and push accuracy from 30% to 36% on BrowseComp-Plus with a simple test-time document cutoff optimization.
-      </p>
-      <div class="post-meta">Date: February 19, 2026 | Estimated Reading Time: 6 min | Authors: rLLM Team</div>
-    </a>
-
-    <!-- FinQA -->
-    <a href="post.html?post=finqa.md" rel="noopener noreferrer">
-      <h3>rLLM-FinQA: How a 4B Model Outperforms 235B and Rivals Gemini 2.5 Pro on Financial Analysis</h3>
-      <p class="main-paragraph">
-        In a collaboration between the rLLM team at UC Berkeley and Snorkel AI, we demonstrate that a domain specialized 4B model outperforms Qwen3-235B (59.7% vs 51.4%) and performs comparably to Gemini 2.5 Pro (60.6%) on Snorkel AI's expert curated agentic financial benchmark.
-        <div class="post-meta">Date: February 18, 2026 | Estimated Reading Time: 17 min | Authors: Manan Roongta, Sijun Tan, Bhavishya Pohani, Charles Dickens, Christopher Glaze</div>
-      </p>
-    </a>
-
-    <!-- SDK -->
-    <a href="post.html?post=sdk.md" rel="noopener noreferrer">
-      <h3>rLLM SDK: Training Any Agentic Program without Code Changes</h3>
-      <p class="main-paragraph">
-        Modern RL training frameworks expect agents in a specific format, but state-of-the-art agent architectures have evolved far beyond this. We introduce the rLLM SDK that intercepts LLM calls directly, allowing you to train any agent framework—LangChain, LangGraph, AutoGen, or custom code—without rewriting for training. What's trainable = what's practical to build.
-        <div class="post-meta">Date: December 10, 2025 | Estimated Reading Time: 8 min | Authors: Tianhao Wu, Sijun Tan, and the rLLM team</div>
-      </p>
-    </a>
-
-    <!-- rLLM v0.2 -->
-    <a href="post.html?post=rllm_v0.2.md" rel="noopener noreferrer">
-      <h3>rLLM v0.2: RL Training over General Agentic Programs</h3>
-      <p class="main-paragraph">
-        We are excited to announce rLLM v0.2, a major upgrade of our RL training framework. In v0.1, rLLM provided agent and OpenAI Gym-like environment abstractions to support training ReACT-style agents. In v0.2, we introduce AgentWorkflowEngine and AgentWorkflowTrainer—more general abstractions that enable arbitrary agentic programs to be trained. Agent builders and researchers can now define multi-agent systems, complex workflows (such as solver-judge, planner-executor, or MCTS), or agentic programs with custom reward functions, and train them with reinforcement learning without rewriting their production code.
-        <div class="post-meta">Date: October 16, 2025 | Estimated Reading Time: 10 min | Authors: Sijun Tan, Kyle Montgomery, and the rLLM team</div>
-      </p>
-    </a>
-
-    <!-- Pepper -->
-    <a href="post.html?post=pepper.md" rel="noopener noreferrer">
-      <h3>Pepper: A Real-time, Event-Driven Architecture for Proactive Agentic Systems</h3>
-      <p class="main-paragraph">
-        We introduce Pepper, a real-time, event-driven architecture enabling the next generation of proactive agentic systems. With Pepper, we built a personal assistant that proactively fetches and summarizes emails, provides context before you even start a conversation, and continues to follow up while working on tasks. We open-source Pepper to advance the creation of proactive agentic systems.
-      </p>
-      <div class="post-meta">Date: October 2, 2025 | Estimated Reading Time: 13 min | Authors: Tianhao Wu, Sijun Tan</div>
-    </a>
-    <!-- rLLM -->
-    <a href="https://pretty-radio-b75.notion.site/rLLM-A-Framework-for-Post-Training-Language-Agents-21b81902c146819db63cd98a54ba5f31" rel="noopener noreferrer">
-      <h3>rLLM: Reinforcement Learning for Language Agents</h3>
-      <p class="main-paragraph">
-        We release rLLM, an open-source framework for post-training language agents via reinforcement learning. With rLLM, you can easily build their custom agents and environments, train them with reinforcement learning, and deploy them for real-world workloads.
-      </p>
-      <div class="post-meta">Date: July 1, 2025 | Estimated Reading Time: 10 min | Authors: Sijun Tan, Michael Luo, Colin Cai </div>
-    </a>
-  </section>
+  <!-- ========== LATEST POSTS ========== -->
+  <div class="section-head">
+    <h2>Latest</h2>
+    <a href="blog.html" class="section-link">View all posts →</a>
+  </div>
+  <section class="post-grid" id="posts-grid"></section>
 
   <!-- ========== FOOTER ========== -->
   <footer>
-    <p>© 2025 rLLM Project</p>
+    <p>© 2026 rLLM Project</p>
   </footer>
+
+  <script src="posts.js"></script>
   <script>
-    const themeToggleBtn = document.getElementById('themeToggleBtn');
-    const body = document.body;
-    const emailIcon = document.getElementById('email-icon');
-    const githubIcon = document.getElementById('github-icon');
-    const xIcon = document.getElementById('x-icon');
-    const logo = document.getElementById('logo');
-    const toggleIcon = document.querySelector('.toggle-icon');
-    const toggleLabel = document.querySelector('.toggle-label');
-
-    // Function to update image sources based on theme
-    function updateIcons(theme) {
-        if (theme === 'light') {
-        emailIcon.src = "images/contact_icons/email_light.png";
-        githubIcon.src = "images/contact_icons/github_light.png";
-        xIcon.src = "images/contact_icons/x_light.png";
-        logo.src = "images/rllm_logo/rllm_logo_light.png"; // Light mode logo
-        } else {
-        emailIcon.src = "images/contact_icons/email_dark.png";
-        githubIcon.src = "images/contact_icons/github_dark.png";
-        xIcon.src = "images/contact_icons/x_dark.png";
-        logo.src = "images/rllm_logo/rllm_logo_dark.png"; // Dark mode logo
-        }
-    }
-
-    // Check stored theme in localStorage
-    let savedTheme = localStorage.getItem('theme');
-
-    // If no theme is set, default to light mode
-    if (!savedTheme) {
-        savedTheme = 'light';
-        localStorage.setItem('theme', 'light');
-    }
-
-    // Apply the stored theme on page load
-    if (savedTheme === 'light') {
-        body.classList.add('light-mode');
-        toggleIcon.textContent = '☾'; // Moon icon for light mode
-        toggleLabel.textContent = 'Dark Mode';
-        updateIcons('light');
-    } else {
-        body.classList.remove('light-mode');
-        toggleIcon.textContent = '☀\uFE0E';  // Force sun to text style
-        toggleLabel.textContent = 'Light Mode';
-        updateIcons('dark');
-    }
-
-    // Event listener for theme toggle
-    themeToggleBtn.addEventListener('click', () => {
-        body.classList.toggle('light-mode');
-        let newTheme = body.classList.contains('light-mode') ? 'light' : 'dark';
-        localStorage.setItem('theme', newTheme);
-        toggleIcon.textContent = newTheme === 'light' ? '☾' : '☀\uFE0E';
-        toggleLabel.textContent = newTheme === 'light' ? 'Dark Mode' : 'Light Mode';
-        updateIcons(newTheme);
+    renderPosts({
+      gridEl: document.getElementById('posts-grid'),
+      limit: 6,
     });
   </script>
-  
+  <script src="theme.js"></script>
 </body>
 </html>

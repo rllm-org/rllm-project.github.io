@@ -146,6 +146,24 @@ header {
   border-color: var(--border-strong);
 }
 
+.rss-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 9px;
+  color: var(--text-soft);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.rss-nav-btn:hover {
+  color: var(--accent-ink);
+  border-color: var(--border-strong);
+}
+
 .theme-toggle-btn .toggle-label {
   display: none;
 }

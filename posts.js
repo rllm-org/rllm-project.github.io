@@ -181,3 +181,8 @@ function renderPosts({ featuredEl, gridEl, limit = null, withFeatured = false } 
   if (limit) rest = rest.slice(0, limit);
   if (gridEl) gridEl.innerHTML = rest.map(cardMarkup).join("");
 }
+
+// Allow Node tooling (e.g. generate_rss.js) to consume the post registry.
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { POSTS };
+}

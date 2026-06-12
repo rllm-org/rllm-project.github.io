@@ -260,6 +260,30 @@ header {
   max-width: 56ch;
 }
 
+.rss-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1.2rem;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.rss-link:hover {
+  border-color: var(--border-strong);
+}
+
+.rss-icon {
+  display: block;
+}
+
 /* ============ FEATURED CARD ============ */
 .featured {
   width: var(--content-width);

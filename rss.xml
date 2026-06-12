@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>rLLM Project — Blog</title>
+    <link>https://rllm-project.com/blog.html</link>
+    <atom:link href="https://rllm-project.com/rss.xml" rel="self" type="application/rss+xml" />
+    <description>Research, releases, and updates from the rLLM Project — building the infrastructure to train, evaluate, and evolve intelligent agents.</description>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 12 Jun 2026 00:07:19 GMT</lastBuildDate>
+    <pubDate>Wed, 18 Mar 2026 00:00:00 GMT</pubDate>
+    <item>
+      <title>Hive: Collaborative Agent Evolution Platform</title>
+      <link>https://hive.rllm-project.com</link>
+      <guid isPermaLink="true">https://hive.rllm-project.com</guid>
+      <pubDate>Wed, 18 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Platform</category>
+      <dc:creator>The rLLM Team</dc:creator>
+      <description>Hive is a collaborative platform for evolving and improving agents together. A swarm of agents iterate on shared tasks, learning from each other to push past what any single agent can reach alone.</description>
+    </item>
+    <item>
+      <title>rLLM UI: Real-Time Observability for Agent Training &amp; Evaluation</title>
+      <link>https://rllm-project.com/post.html?post=rllm_ui.md</link>
+      <guid isPermaLink="true">https://rllm-project.com/post.html?post=rllm_ui.md</guid>
+      <pubDate>Mon, 16 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Release</category>
+      <dc:creator>Chanbin Park and the rLLM Team</dc:creator>
+      <description>A real-time observability platform for training and evaluating agents. Other tools show what is happening during training — rLLM UI shows you why, letting you inspect exactly what the model generates at every step.</description>
+    </item>
+    <item>
+      <title>On-Policy Distillation: Training Smaller Students from Stronger Teachers</title>
+      <link>https://rllm-project.com/post.html?post=opd.md</link>
+      <guid isPermaLink="true">https://rllm-project.com/post.html?post=opd.md</guid>
+      <pubDate>Fri, 06 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Research</category>
+      <dc:creator>Brian Chen, Kyle Montgomery, and the rLLM Team</dc:creator>
+      <description>rLLM On-Policy Distillation (OPD) trains smaller students from stronger teachers by using the teacher&apos;s policy to guide the student&apos;s training — a practical recipe for compact, capable models.</description>
+    </item>
+    <item>
+      <title>Faster and Better: Open-Source Recipe for Deep Research Agents</title>
+      <link>https://rllm-project.com/post.html?post=deepresearch.md</link>
+      <guid isPermaLink="true">https://rllm-project.com/post.html?post=deepresearch.md</guid>
+      <pubDate>Thu, 19 Feb 2026 00:00:00 GMT</pubDate>
+      <category>Research</category>
+      <dc:creator>rLLM Team</dc:creator>
+      <description>We achieve 5× faster training (1 day vs 5 days) for deep research agents with rLLM&apos;s fully asynchronous architecture, and push accuracy from 30% to 36% on BrowseComp-Plus with a simple test-time document cutoff.</description>
+    </item>
+    <item>
+      <title>rLLM-FinQA: A 4B Model that Outperforms 235B and Rivals Gemini 2.5 Pro</title>
+      <link>https://rllm-project.com/post.html?post=finqa.md</link>
+      <guid isPermaLink="true">https://rllm-project.com/post.html?post=finqa.md</guid>
+      <pubDate>Wed, 18 Feb 2026 00:00:00 GMT</pubDate>
+      <category>Research</category>
+      <dc:creator>Manan Roongta, Sijun Tan, Bhavishya Pohani, Charles Dickens, Christopher Glaze</dc:creator>
+      <description>In a collaboration with Snorkel AI, a domain-specialized 4B model outperforms Qwen3-235B (59.7% vs 51.4%) and performs comparably to Gemini 2.5 Pro (60.6%) on an expert-curated agentic financial benchmark.</description>
+    </item>
+    <item>
+      <title>rLLM SDK: Training Any Agentic Program without Code Changes</title>
+      <link>https://rllm-project.com/post.html?post=sdk.md</link>
+      <guid isPermaLink="true">https://rllm-project.com/post.html?post=sdk.md</guid>
+      <pubDate>Wed, 10 Dec 2025 00:00:00 GMT</pubDate>
+      <category>Release</category>
+      <dc:creator>Tianhao Wu, Sijun Tan, and the rLLM team</dc:creator>
+      <description>The rLLM SDK intercepts LLM calls directly, letting you train any agent framework — LangChain, LangGraph, AutoGen, or custom code — without rewriting for training. What&apos;s trainable = what&apos;s practical to build.</description>
+    </item>
+    <item>
+      <title>rLLM v0.2: RL Training over General Agentic Programs</title>
+      <link>https://rllm-project.com/post.html?post=rllm_v0.2.md</link>
+      <guid isPermaLink="true">https://rllm-project.com/post.html?post=rllm_v0.2.md</guid>
+      <pubDate>Thu, 16 Oct 2025 00:00:00 GMT</pubDate>
+      <category>Release</category>
+      <dc:creator>Sijun Tan, Kyle Montgomery, and the rLLM team</dc:creator>
+      <description>A major upgrade introducing AgentWorkflowEngine and AgentWorkflowTrainer — general abstractions that let you define multi-agent systems and complex workflows, and train them with RL without rewriting production code.</description>
+    </item>
+    <item>
+      <title>Pepper: An Event-Driven Architecture for Proactive Agentic Systems</title>
+      <link>https://rllm-project.com/post.html?post=pepper.md</link>
+      <guid isPermaLink="true">https://rllm-project.com/post.html?post=pepper.md</guid>
+      <pubDate>Thu, 02 Oct 2025 00:00:00 GMT</pubDate>
+      <category>Research</category>
+      <dc:creator>Tianhao Wu, Sijun Tan</dc:creator>
+      <description>Pepper is a real-time, event-driven architecture enabling proactive agentic systems. Our personal assistant proactively fetches and summarizes emails and provides context before you even start a conversation.</description>
+    </item>
+    <item>
+      <title>rLLM: Reinforcement Learning for Language Agents</title>
+      <link>https://pretty-radio-b75.notion.site/rLLM-A-Framework-for-Post-Training-Language-Agents-21b81902c146819db63cd98a54ba5f31</link>
+      <guid isPermaLink="true">https://pretty-radio-b75.notion.site/rLLM-A-Framework-for-Post-Training-Language-Agents-21b81902c146819db63cd98a54ba5f31</guid>
+      <pubDate>Tue, 01 Jul 2025 00:00:00 GMT</pubDate>
+      <category>Release</category>
+      <dc:creator>Sijun Tan, Michael Luo, Colin Cai</dc:creator>
+      <description>We release rLLM, an open-source framework for post-training language agents via reinforcement learning. Build custom agents and environments, train them with RL, and deploy them for real-world workloads.</description>
+    </item>
+  </channel>
+</rss>

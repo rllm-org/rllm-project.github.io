@@ -3,6 +3,18 @@
 
 const POSTS = [
   {
+    title: "Training a Long-horizon Java Code Migration Agent on rLLM with AWS Bedrock AgentCore Runtime",
+    excerpt:
+      "A joint post with the AWS Bedrock AgentCore science team. We train Qwen3-Coder-30B (MoE) to migrate Java 8→17 repos on MigrationBench end-to-end via RL — 44%→56% pass@1 — using a clean three-way split between the agent, the AgentCore serverless runtime, and the rLLM trainer.",
+    date: "2026-06-12",
+    authors: "AWS Bedrock AgentCore: Bryan Lu, Youzhi Luo, Linbo Liu, Panpan Xu, Anoop Deoras · rLLM: Sijun Tan, Kyle Montgomery",
+    readingTime: "16 min",
+    category: "Research",
+    link: "post.html?post=agentcore_migrationbench.md",
+    cover: "g-amber",
+    image: "assets/agentcore/rllm-agentcore.svg",
+  },
+  {
     title: "Hive: Collaborative Agent Evolution Platform",
     excerpt:
       "Hive is a collaborative platform for evolving and improving agents together. A swarm of agents iterate on shared tasks, learning from each other to push past what any single agent can reach alone.",

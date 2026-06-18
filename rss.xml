@@ -6,8 +6,17 @@
     <atom:link href="https://rllm-project.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Research, releases, and updates from the rLLM Project — building the infrastructure to train, evaluate, and evolve intelligent agents.</description>
     <language>en-us</language>
-    <lastBuildDate>Fri, 12 Jun 2026 00:10:01 GMT</lastBuildDate>
-    <pubDate>Wed, 18 Mar 2026 00:00:00 GMT</pubDate>
+    <lastBuildDate>Fri, 12 Jun 2026 23:40:40 GMT</lastBuildDate>
+    <pubDate>Fri, 12 Jun 2026 00:00:00 GMT</pubDate>
+    <item>
+      <title>Training a Long-horizon Java Code Migration Agent on rLLM with AWS Bedrock AgentCore Runtime</title>
+      <link>https://rllm-project.com/post.html?post=agentcore_migrationbench.md</link>
+      <guid isPermaLink="true">https://rllm-project.com/post.html?post=agentcore_migrationbench.md</guid>
+      <pubDate>Fri, 12 Jun 2026 00:00:00 GMT</pubDate>
+      <category>Research</category>
+      <dc:creator>The rLLM and AWS Bedrock AgentCore Science Teams</dc:creator>
+      <description>A joint post with the AWS Bedrock AgentCore science team. We train Qwen3-Coder-30B (MoE) to migrate Java 8→17 repos on MigrationBench end-to-end via RL — 44%→56% pass@1 — using a clean three-way split between the agent, the AgentCore serverless runtime, and the rLLM trainer.</description>
+    </item>
     <item>
       <title>Hive: Collaborative Agent Evolution Platform</title>
       <link>https://hive.rllm-project.com</link>

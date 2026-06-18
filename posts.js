@@ -3,11 +3,11 @@
 
 const POSTS = [
   {
-    title: "Training a Long-horizon Java Code Migration Agent on rLLM with AWS Bedrock AgentCore Runtime",
+    title: "Training a Frontier Java Code Migration Agent with AWS AgentCore Runtime",
     excerpt:
-      "A joint post with the AWS Bedrock AgentCore science team. We train Qwen3-Coder-30B (MoE) to migrate Java 8→17 repos on MigrationBench end-to-end via RL — 44%→56% pass@1 — using a clean three-way split between the agent, the AgentCore serverless runtime, and the rLLM trainer.",
+      "We train Qwen3-Coder-30B-A3B using AgentCore Runtime integration to outperform Claude 4.5 Haiku on long-horizon Java repo migrations.",
     date: "2026-06-12",
-    authors: "AWS Bedrock AgentCore: Bryan Lu, Youzhi Luo, Linbo Liu, Panpan Xu, Anoop Deoras · rLLM: Sijun Tan, Kyle Montgomery",
+    authors: "AWS AgentCore Science and rLLM Teams",
     readingTime: "16 min",
     category: "Research",
     link: "post.html?post=agentcore_migrationbench.md",

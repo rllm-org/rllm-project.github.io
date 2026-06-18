@@ -1,7 +1,7 @@
 ---
 title: "Training a Frontier Java Code Migration Agent with AWS AgentCore Runtime"
 author: "Bryan Lu, Youzhi Luo, Linbo Liu, Panpan Xu, Anoop Deoras, Sijun Tan, Kyle Montgomery, Tianhao Wu, Sida Li, Ion Stoica"
-author_line: "Bryan Lu, Youzhi Luo, Linbo Liu, Panpan Xu, Anoop Deoras and the rLLM Team"
+author_line: "Bryan Lu, Youzhi Luo, Linbo Liu, Panpan Xu, Luke Huan, Anoop Deoras and the rLLM Team"
 date: "2026-06-12"
 citation_key: "rllm2026agentcore"
 ---
@@ -10,14 +10,14 @@ citation_key: "rllm2026agentcore"
 
 ## TL;DR
 
-We trained Qwen3-Coder-30B (MoE) to migrate Java repositories from Java 8 to Java 17 on the [MigrationBench](https://arxiv.org/abs/2505.09569)(KDD 2026) benchmark, end-to-end via reinforcement learning on rLLM with AWS AgentCore Runtime integration. Pass@1 on the validation set under minimal-migration setting (code compiled to Java 17; tests preserved and passing) climbed from **40%** to **73%** over the course of training, **surpassing Claude 4.5 Haiku at 71% and chasing Sonnet at 83%**.
+We trained Qwen3-Coder-30B MoE to migrate Java repositories from Java 8 to Java 17 on the [MigrationBench](https://arxiv.org/abs/2505.09569)(KDD 2026) benchmark, end-to-end via reinforcement learning on rLLM with AWS AgentCore Runtime integration (**130k** context, **40+** turns on average). Pass@1 on the validation set climbed from **40%** to **73%** over the course of training, **surpassing Claude 4.5 Haiku at 71% and chasing Sonnet at 83%**.
 </aside>
 
 Beyond the result, this post focuses on the architecture behind it: a three-way separation between the *agent* the developer writes, the *runtime* it executes on, and the *trainer* that learns from it. None of the three needs to know how the others are implemented. The setup combines three components:
 
 1. **AWS Bedrock AgentCore Runtime (ACR)** — a managed serverless runtime where each rollout runs inside its own MicroVM, with auto-scaling, sandboxing, and built-in observability.
-2. **`agentcore-rl-toolkit`** — an open-source SDK ([github.com/awslabs/agentcore-rl-toolkit](https://github.com/awslabs/agentcore-rl-toolkit)) that lets a developer take an agent already deployed to ACR and make it RL-trainable with a single decorator change.
-3. **`rllm-model-gateway`** — a transparent reverse proxy between the agent and the inference server (vLLM, Tinker sampling client) that captures token IDs and logprobs without the agent code ever knowing it's there.
+2. **[`agentcore-rl-toolkit`](https://github.com/awslabs/agentcore-rl-toolkit)** — an open-source SDK that lets a developer take an agent already deployed to ACR and make it RL-trainable with a single decorator change.
+3. **[`rllm-model-gateway`](https://pypi.org/project/rllm-model-gateway/)** — a transparent reverse proxy between the agent and the inference server (vLLM, Tinker sampling client) that captures token IDs and logprobs without the agent code ever knowing it's there.
 
 We chose to build on rLLM because of its training-backend flexibility, which lets us train a single agent definition against either Tinker (hosted) or veRL (self-managed, distributed) with no agent-side changes. We were also closely aligned with the rLLM team on a larger goal — democratizing reinforcement learning for LLMs: any agent a developer can build and deploy, they should also be able to train. 
 
@@ -83,7 +83,7 @@ A few design details that matter in practice:
 - **Session-sticky routing.** Multi-turn agents make many calls within one session. Routing them all to the same vLLM worker via an LRU + least-loaded policy preserves the prefix cache across turns, which is significant for long-context tasks like ours.
 - **OpenAI-strict response shape.** The response sanitizer lets the agent author treat the gateway as an OpenAI endpoint. Everything we inject we also strip.
 
-The design isn't novel — it's an instance of a pattern we're seeing converge across several teams. We were directly inspired by the **Forge** Gateway Server + Middleware + Data Pool architecture described in the [MiniMax's X article on Forge](https://x.com/MiniMax_AI/status/2022175400093462661), where the Gateway Server sits between the agent and the LLM, processes completions over standard protocols, and isolates model details from the agent's high-level logic. That's exactly the slot rllm-model-gateway fills. One additional component we implemented is an adaptation layer to work with different inference servers (vLLM, Tinker, etc.). We believe this has a very practical UX impact as ultimately, AgentCore Runtime is a rollout engine, and we want it to be compatible with any training engine, whether it's a hosted one like Tinker or a distributed one like veRL, so that a wider range of users from different backgrounds and resource constraints are covered. As we envision multiple frameworks would benefit such functionalities, we have built it to be a standalone module since the very beginning [PR](https://github.com/rllm-org/rllm/pull/412) and published to [PyPI](https://pypi.org/project/rllm-model-gateway/) in early March. We discuss similarities and differences in the related-work section at the end of the post.
+The design isn't novel — it's an instance of a pattern we're seeing converge across several teams. We were directly inspired by the **Forge** Gateway Server + Middleware + Data Pool architecture described in the [MiniMax's X article on Forge](https://x.com/MiniMax_AI/status/2022175400093462661), where the Gateway Server sits between the agent and the LLM, processes completions over standard protocols, and isolates model details from the agent's high-level logic. That's exactly the slot `rllm-model-gateway` fills. One additional component we implemented is an adaptation layer to work with different inference servers (vLLM, Tinker, etc.). We believe this has a very practical UX impact as ultimately, AgentCore Runtime is a rollout engine, and we want it to be compatible with any training engine, whether it's a hosted one like Tinker or a distributed one like veRL, so that a wider range of users from different backgrounds and resource constraints are covered. As we envision multiple frameworks would benefit such functionalities, we have built it to be a standalone module since the very beginning [PR](https://github.com/rllm-org/rllm/pull/412) and published to [PyPI](https://pypi.org/project/rllm-model-gateway/) in early March. We discuss similarities and differences in the related-work section at the end of the post.
 
 ## A closer look at `agentcore-rl-toolkit`
 
@@ -145,7 +145,7 @@ def invoke_agent(payload: dict):
 
     request = InvocationRequest(**payload)
 
-    model = OpenAIModel(client_args={"api_key": "EMPTY", "base_url": base_url}, model_id=model_id)
+    model = OpenAIModel(client_args={"base_url": base_url}, model_id=model_id)
 
     agent = Agent(model=model, tools=[shell, editor], system_prompt=system_prompt)
 
@@ -177,7 +177,7 @@ if __name__ == "__main__":
 
 
 
-## Scaling rollouts on AWS — the supporting cast
+## Scaling rollouts on AWS: the supporting cast
 
 Three pieces of AWS infrastructure quietly do a lot of work in the background:
 
@@ -205,7 +205,7 @@ Combining this with truncated importance sampling [TIS](https://fengyao.notion.s
 
 We fine-tuned Qwen3-Coder-30B-A3B with LoRA (rank=64) with GRPO advantage and PPO objective. We used a batch size of 32 and a group size of 8, resulting in 256 concurrent rollouts. As a starting point, we use sync RL where the trainer waits for all rollouts to finish with a hard timeout cap of 30 mins per rollout request. As we mentioned in the section above, each multi-turn rollout will result in a variable number of sequences. In our training, we observe a post prefix-merging sequence count of ~600 per batch, or 2.3 sequences per rollout. We compute the gradients and perform the update using all sequences in a single step to avoid any PPO staleness. We sum up the loss of individual tokens from all sequences under the same rollout, and average across rollouts by the valid rollout counts. 
 
-We chose the collocated setting in veRL backend in rLLM with Megatron as the training engine and vLLM as the inference engine. To enable long-context training (131k), we used TP=2, EP=2. and CP=2 while turning on weights, gradients, and optimizer states sharding on a p6 instance with 8 Nvidia Blackwell GPUs and 1440 GB memory in total. From the inference side, we used TP=4 to maximize KV cache space, as Qwen3 30B only has 4 KV heads due to GQA and larger TP results in KV duplication. Expert parallelism is also enabled. 
+We chose the collocated setting in veRL backend in rLLM with Megatron as the training engine and vLLM as the inference engine. To enable long-context training (131k), we used TP=2, EP=2. and CP=2 while turning on weights, gradients, and optimizer states sharding on a p6 instance with 8 Nvidia Blackwell GPUs and 1440 GB memory in total. From the inference side, we used TP=4 to maximize KV cache space, as Qwen3 30B only has 4 KV heads due to GQA and larger TP results in KV duplication.
 
 To account for train-inference mismatch between the training (Megatron) and inference (vLLM) engine, we leveraged importance sampling, where we re-weight the loss function by the ratio of the sampled token's probabilities from the train and inference engine respectively. While theoretically sound, vanilla reweighting can suffer from occasional extreme ratios that destabilize training. Thus, we utilized TIS with C=2, which caps the reweighting term to avoid unbounded gradient updates. 
 
@@ -232,15 +232,15 @@ As a reference, we benchmarked Claude 4.5 Haiku and Sonnet, which were released 
 
 
 ### Qualitative Results
-Beyond the performance metrics, what's more interesting is techniques the model was able to learn and adopt. The next section will focus on this part with both an overview and a case study. 
+Beyond the numbers, what's more interesting is the techniques the model learned to adopt — which we unpack below through an overview and a representative case study. 
 
 
-The base model already knew the trivial move — flip <source>/<target> (or maven.compiler.release) to 17. On easy repos a flag flip is the whole migration and both checkpoints pass. The interesting deltas are the repos where the flag flip *cascades* into real Java-17 toolchain breakage: removed JDK modules (javax.xml.bind), test-framework incompatibility (old Mockito/JaCoCo can't handle major-version-61 bytecode), and the JPMS strong-encapsulation wall (InaccessibleObjectException). Note, however, these repos are trivially migratable only under the "minimal migration" setting. Under the maximal migration setting where the agent also needs to upgrade packages to their latest version, these repos will pose significant challenges beyond the compiler flag flip.
+The base model already knew the trivial move — flip `<source>`/`<target>` (or `maven.compiler.release`) to 17. On easy repos a flag flip is the whole migration and both checkpoints pass. The interesting deltas are the repos where the flag flip *cascades* into real Java-17 toolchain breakage: removed JDK modules (`javax.xml.bind`), test-framework incompatibility (old `Mockito`/`JaCoCo` can't handle major-version-61 bytecode), and the JPMS strong-encapsulation wall (`InaccessibleObjectException`). Note, however, these repos are trivially migratable only under the "minimal migration" setting. Under the maximal migration setting where the agent also needs to upgrade packages to their latest version, these repos will pose significant challenges beyond the compiler flag flip.
 
 Upon inspecting every fail → pass repos in the validation set (300 samples), the base policy and the trained policy applied broadly similar pom edits — the difference was process discipline, and it took the same three forms every time:
-1. It stopped fake passing. The base model, when residual test errors wouldn't clear, escaped via -DskipTests / -Dmaven.javadoc.skip=true / -Pskip-spotbugs, or even emptied failing test bodies, even when we explicitly instructed in the system prompt not to do so, then declared success on a proxy signal — a green mvn clean compile plus a javap … major version: 61 check. 
-2. It reads the actual error and fixes the responsible component — co-upgrading the whole test stack (Mockito → 5.x, JaCoCo → 0.8.8+, JUnit/AssertJ/EqualsVerifier) and synthesizing the exact --add-opens module/package=ALL-UNNAMED named in an InaccessibleObject message — rather than guessing or routing around the failure.
-3. It makes minimal, mechanism-preserving edits and doesn't flail — e.g. renaming a moved package instead of rewriting test scaffolding by hand; finishing in ~25–35 steps instead of burning the full step budget with a `git restore` panic loop.
+1. **It stopped fake passing.** The base model, when residual test errors wouldn't clear, escaped via `-DskipTests` / `-Dmaven.javadoc.skip=true` / `-Pskip-spotbugs`, or even emptied failing test bodies, even when we explicitly instructed in the system prompt not to do so, then declared success on a proxy signal — a green `mvn clean compile` plus a `javap … major version: 61` check. 
+2. **It reads the actual error and fixes the responsible component** — co-upgrading the whole test stack (`Mockito` → 5.x, `JaCoCo` → 0.8.8+, `JUnit`/`AssertJ`/`EqualsVerifier`) and synthesizing the exact `--add-opens module/package=ALL-UNNAMED` named in an `InaccessibleObject` message — rather than guessing or routing around the failure.
+3. **It makes minimal, mechanism-preserving edits and doesn't flail** — e.g. renaming a moved package instead of rewriting test scaffolding by hand; finishing in ~25–35 steps instead of burning the full step budget with a `git restore` panic loop.
 To make it concretely, we show an example migration from the agent, before and after training. 
 
 
@@ -248,13 +248,13 @@ To make it concretely, we show an example migration from the agent, before and a
 
 This is a good example because a flag flip is not enough. Java 17 breaks it three ways:
 
-- RedditOAuthAgent.java imports javax.xml.bind.DatatypeConverter — removed from the JDK in Java 11+.
-- Mockito 1.9.5 can't generate proxies on JDK 17: NoClassDefFoundError: … ClassImposterizer$3.
-- After bumping Mockito, the API has moved: org.mockito.runners.MockitoJUnitRunner → org.mockito.junit.MockitoJUnitRunner, org.mockito.Matchers.any → org.mockito.Mockito.any.
+- `RedditOAuthAgent.java` imports `javax.xml.bind.DatatypeConverter` — removed from the JDK in Java 11+.
+- `Mockito` 1.9.5 can't generate proxies on JDK 17: `NoClassDefFoundError: … ClassImposterizer$3`.
+- After bumping `Mockito`, the API has moved: `org.mockito.runners.MockitoJUnitRunner` → `org.mockito.junit.MockitoJUnitRunner`, `org.mockito.Matchers.any` → `org.mockito.Mockito.any`.
 
 **Step 0 — base policy (FAILED, ran out of steps at 91)**
 
-The base model diagnosed the substance correctly but destroyed itself on execution mechanics. It correctly added JAXB deps, swapped DatatypeConverter → java.util.Base64, and bumped Mockito 1.9.5 → 4.6.1. But it then tried to migrate the test files by hand, and corrupted them:
+The base model diagnosed the substance correctly but destroyed itself on execution mechanics. It correctly added JAXB deps, swapped `DatatypeConverter` → `java.util.Base64`, and bumped `Mockito` 1.9.5 → 4.6.1. But it then tried to migrate the test files by hand, and corrupted them:
 
 ```json
 
@@ -307,7 +307,7 @@ Agent: I'll add the JAXB dependencies and configure the compiler to use Java 17:
        → editor: str_replace pom.xml     (Mockito 1.9.5 → 4.6.1)
 ```
 
-The pivotal move: instead of ripping out @RunWith and bolting on openMocks() by hand (the step-0 trap), it recognized the class merely moved packages and did one surgical, mechanism-preserving rename — keeping the runner so no @Before body surgery is needed — plus the Matchers → Mockito relocation and a -Xdoclint:none for the Java-17 Javadoc plugin:
+The pivotal move: instead of ripping out `@RunWith` and bolting on `openMocks()` by hand (the step-0 trap), it recognized the class merely moved packages and did one surgical, mechanism-preserving rename — keeping the runner so no `@Before` body surgery is needed — plus the `Matchers` → `Mockito` relocation and a `-Xdoclint:none` for the Java-17 Javadoc plugin:
 
 ```json
 → shell: find src/test -name "*.java" -exec sed -i 's/org\.mockito\.runners/org\.mockito\.junit/g' {} \;
@@ -343,7 +343,7 @@ Three things on our roadmap:
 
 The "proxy at the LLM API to capture training signal" pattern is converging across several teams concurrently, and we want to call out the prior and parallel work explicitly.
 
-The **MiniMax-M2 Series / Forge** system, described in the [M2 technical report (arxiv:2605.26494)](https://arxiv.org/abs/2605.26494), introduced a Gateway Server + Middleware + Data Pool architecture that decouples agents from training and inference, lets agents communicate over standard protocols, and asynchronously buffers trajectories for the trainer. The Gateway Server piece — a standardized communication layer between agent and LLM that isolates model details from agent logic — is what `rllm-model-gateway` is directly modeled on. Where we differ: ours is an open-source, OpenAI-compatible reverse proxy with pluggable trace storage scoped per ACR session, and we add the AWS-native pieces (ACR-managed session lifecycle, S3-backed result delivery, CloudWatch tracing). Forge also includes engineering optimizations we don't (yet) have — prefix-tree merging for redundant prefix prefilling, and a windowed-FIFO scheduler that balances throughput against off-policyness — both of which are interesting directions for future work.
+The **MiniMax Forge** system, described in the [M2 technical report (arxiv:2605.26494)](https://arxiv.org/abs/2605.26494), introduced a Gateway Server + Middleware + Data Pool architecture that decouples agents from training and inference, lets agents communicate over standard protocols, and asynchronously buffers trajectories for the trainer. The Gateway Server piece — a standardized communication layer between agent and LLM that isolates model details from agent logic — is what `rllm-model-gateway` is directly modeled on. Where we differ: ours is an open-source, and we also implement the adaption layer that allows the gateway to work with different inference workers, be it vLLM or Tinker. Forge also includes engineering optimizations we don't (yet) have — prefix-tree merging for redundant prefix prefilling, and a windowed-FIFO scheduler that balances throughput against off-policyness — both of which are interesting directions for future work.
 
 NVIDIA's **Polar** ([arxiv:2605.24220](https://arxiv.org/abs/2605.24220), May 2026) is concurrent independent work in the same direction. Polar proxies LLM API calls at each rollout node, records token-level interactions, and reconstructs token-faithful trajectories, so any agent harness can be RL-trained without modification. We share the core insight — proxy at the LLM API to preserve training signal — and the broader architectural commitments: black-box harness adoption, decoupled trainer, asynchronous rollout. Where we differ: we run rollouts on a managed serverless runtime (ACR) instead of self-managed rollout nodes, we target multi-backend training (Tinker + verl) on top of rLLM, and we validate on long-horizon Java migration rather than SWE-Bench Verified. We view Polar as strong validation of the architectural direction.
 
@@ -353,9 +353,9 @@ The convergence is encouraging. It suggests this is the right level at which to 
 
 - rLLM project and documentation: [docs.rllm-project.com/agent-runtimes/agentcore](https://docs.rllm-project.com/agent-runtimes/agentcore)
 - `agentcore-rl-toolkit`: [github.com/awslabs/agentcore-rl-toolkit](https://github.com/awslabs/agentcore-rl-toolkit)
-- `rllm-model-gateway`: in this repository (see `AGENTS.md`)
+- `rllm-model-gateway`: [github.com/rllm-org/rllm/tree/main/rllm-model-gateway](https://github.com/rllm-org/rllm/tree/main/rllm-model-gateway)
 - AgentCore Runtime observability: [docs.aws.amazon.com/bedrock-agentcore/…/observability-configure.html](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-configure.html)
 - MiniMax-M2 Series / Forge: [arxiv:2605.26494](https://arxiv.org/abs/2605.26494)
 - NVIDIA Polar: [arxiv:2605.24220](https://arxiv.org/abs/2605.24220)
 - MigrationBench: [arxiv:2505.09569](https://arxiv.org/abs/2505.09569); [github.com/amazon-science/MigrationBench](https://github.com/amazon-science/MigrationBench)
-- Tinker completers (for contrast): [tinker-docs.thinkingmachines.ai/tutorials/core-concepts/completers](https://tinker-docs.thinkingmachines.ai/tutorials/core-concepts/completers/)
+- Tinker completers: [tinker-docs.thinkingmachines.ai/tutorials/core-concepts/completers](https://tinker-docs.thinkingmachines.ai/tutorials/core-concepts/completers/)

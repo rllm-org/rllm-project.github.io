@@ -8,7 +8,7 @@ const POSTS = [
       "We train Qwen3-Coder-30B-A3B using AgentCore Runtime integration to outperform Claude 4.5 Haiku on long-horizon Java repo migrations.",
     date: "2026-06-12",
     authors: "AWS AgentCore Science and rLLM Teams",
-    readingTime: "16 min",
+    readingTime: "15 min",
     category: "Research",
     link: "post.html?post=agentcore_migrationbench.md",
     cover: "g-amber",

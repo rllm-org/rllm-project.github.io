@@ -1,7 +1,7 @@
 ---
 title: "Training a Frontier Java Code Migration Agent with AWS AgentCore Runtime"
-author: "Bryan Lu, Youzhi Luo, Linbo Liu, Panpan Xu, Luke Huan, Anoop Deoras, Sijun Tan, Kyle Montgomery, Tianhao Wu, Ion Stoica"
-author_line: "Bryan Lu, Youzhi Luo, Linbo Liu, Panpan Xu, Luke Huan, Anoop Deoras and the rLLM Team"
+author: "Bryan Lu, Youzhi Luo, Linbo Liu, Panpan Xu, Anoop Deoras, Sijun Tan, Kyle Montgomery, Tianhao Wu, Ion Stoica"
+author_line: "Bryan Lu, Youzhi Luo, Linbo Liu, Panpan Xu, Anoop Deoras and the rLLM Team"
 date: "2026-06-22"
 citation_key: "rllm2026agentcore"
 ---

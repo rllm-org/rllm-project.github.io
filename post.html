@@ -13,6 +13,25 @@
   <!-- Include highlight.js for syntax highlighting -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="highlight-theme">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <!-- Configure MathJax BEFORE loading the library (v3 requires the config to
+       exist before the script runs, otherwise $$...$$ delimiters aren't registered). -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)'], ['$', '$']],
+        displayMath: [['\\[', '\\]'], ['$$', '$$']],
+        processEscapes: true,
+        processEnvironments: true,
+        packages: {'[+]': ['ams', 'newcommand', 'configmacros', 'base']},
+        macros: {
+          KL: "\\text{KL}"
+        }
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    };
+  </script>
   <!-- Include MathJax for math rendering -->
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
@@ -91,31 +110,6 @@
 
   <script src="theme.js"></script>
   <script>
-    // Configure MathJax
-    window.MathJax = {
-      tex: {
-        inlineMath: [['\\(', '\\)'], ['$', '$']],
-        displayMath: [['\\[', '\\]'], ['$$', '$$']],
-        processEscapes: true,
-        processEnvironments: true,
-        packages: {'[+]': ['ams', 'newcommand', 'configmacros', 'base']},
-        macros: {
-          KL: "\\text{KL}"
-        }
-      },
-      options: {
-        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
-      },
-      startup: {
-        ready: () => {
-          MathJax.startup.defaultReady();
-          MathJax.startup.promise.then(() => {
-            console.log('MathJax initial typesetting complete');
-          });
-        }
-      }
-    };
-
     // Configure marked.js
     marked.setOptions({
       highlight: function(code, lang) {
@@ -322,8 +316,25 @@
           linkContainer.style.display = 'flex';
         }
         
+        // Protect LaTeX math from marked.js before rendering. marked treats `_`
+        // as emphasis and `\,` as an escaped char, which corrupts subscripts and
+        // spacing macros. Stash each math span behind a placeholder marked won't
+        // touch, parse markdown, then restore the raw math so MathJax can typeset it.
+        const mathSpans = [];
+        const stashMath = (raw) => {
+          const token = `MATHJAXSPAN${mathSpans.length}ENDMATHJAXSPAN`;
+          mathSpans.push(raw);
+          return token;
+        };
+        // Display math ($$...$$) first, then inline ($...$).
+        let protectedContent = content
+          .replace(/\$\$([\s\S]+?)\$\$/g, (m) => stashMath(m))
+          .replace(/\$([^\$\n]+?)\$/g, (m) => stashMath(m));
+
         // Render markdown to HTML
-        const htmlContent = marked.parse(content);
+        let htmlContent = marked.parse(protectedContent);
+        // Restore the raw math spans.
+        htmlContent = htmlContent.replace(/MATHJAXSPAN(\d+)ENDMATHJAXSPAN/g, (m, i) => mathSpans[i]);
         const contentDiv = document.getElementById('post-content');
         contentDiv.innerHTML = htmlContent;
         
@@ -356,14 +367,20 @@
         // Generate citation
         generateCitation(title, author, date, window.location.href, citationKey);
         
-        // Re-render MathJax
-        if (window.MathJax && window.MathJax.typesetPromise) {
-          MathJax.typesetPromise([contentDiv]).then(() => {
-            console.log('MathJax rendering complete');
-          }).catch((err) => {
-            console.error('MathJax rendering error:', err);
-          });
-        }
+        // Typeset MathJax. MathJax loads async, so on a fresh page load the
+        // library may not be ready by the time the content is injected. Retry
+        // until typesetPromise exists instead of silently skipping.
+        (function typesetMath(attempt) {
+          if (window.MathJax && window.MathJax.typesetPromise) {
+            window.MathJax.typesetPromise([contentDiv])
+              .then(() => console.log('MathJax rendering complete'))
+              .catch((err) => console.error('MathJax rendering error:', err));
+          } else if (attempt < 100) {
+            setTimeout(() => typesetMath(attempt + 1), 50);
+          } else {
+            console.error('MathJax failed to load; math not typeset.');
+          }
+        })(0);
         
       } catch (error) {
         console.error('Error loading markdown:', error);

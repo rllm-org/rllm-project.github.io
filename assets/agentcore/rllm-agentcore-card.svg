@@ -1,0 +1,157 @@
+<svg viewBox="0 0 960 540" width="960" height="540" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Training topology: the training backend submits prompts to AgentCore Runtime, which runs parallel rollouts. Each rollout's agent calls models via model-gateway, which proxies to the backend's inference servers and captures rollout data. The training engine consumes rollout data and rewards and syncs updated weights back to the inference servers.">
+  <defs>
+    <style>
+      /* Self-contained palette drawn from the blog's styles.css.
+         Light by default; flips on dark color-scheme. */
+      :root {
+        --bg: #ffffff;
+        --text: #0b0d12;
+        --muted: #6b7280;
+        --border: #d6d9df;
+        --accent: #2f6df6;
+        --accent-ink: #1d4ed8;
+        --accent-soft: #e9f0fe;
+        --card: rgba(214, 217, 223, 0.55);
+        --card-shadow: rgba(214, 217, 223, 0.35);
+        --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #11161e;
+          --text: #f3f5f8;
+          --muted: #8b97a7;
+          --border: #2a3543;
+          --accent: #6ea8ff;
+          --accent-ink: #9ac1ff;
+          --accent-soft: rgba(110, 168, 255, 0.16);
+          --card: rgba(42, 53, 67, 0.55);
+          --card-shadow: rgba(42, 53, 67, 0.35);
+        }
+      }
+
+      .dg-bg { fill: var(--bg); }
+
+      .dg-group-label { fill: var(--text); font-size: 18px; font-weight: 700; font-family: var(--font); }
+      .dg-note        { fill: var(--muted); font-size: 14px; font-family: var(--font); }
+      .dg-label       { fill: var(--text); font-size: 16px; font-weight: 600; font-family: var(--font); }
+      .dg-label-accent{ fill: var(--accent-ink); }
+      .dg-sublabel    { fill: var(--muted); font-size: 14px; font-family: var(--font); }
+      .dg-edge-label  { fill: var(--muted); font-size: 13.5px; font-family: var(--font); }
+
+      .dg-group { fill: none; stroke: var(--border); stroke-width: 1; stroke-dasharray: 4 3; }
+
+      .dg-node { fill: var(--bg); stroke: var(--border); stroke-width: 1.25; }
+      .dg-node-accent { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.25; }
+
+      .dg-card        { fill: var(--card); stroke: var(--border); stroke-width: 1; }
+      .dg-card-shadow { fill: var(--card-shadow); stroke: var(--border); stroke-width: 1; opacity: 0.55; }
+
+      .dg-divider { stroke: var(--border); stroke-width: 1; }
+
+      .dg-edge { fill: none; stroke: var(--muted); stroke-width: 1.25; color: var(--muted); }
+      .dg-edge-dashed { stroke-dasharray: 3 3; }
+    </style>
+    <marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
+    </marker>
+  </defs>
+
+  <!-- Full 16:9 canvas background so cover-cropping only ever touches the margin. -->
+  <rect class="dg-bg" x="0" y="0" width="960" height="540" rx="8" />
+
+  <!-- Diagram (900x480) centered with 30px padding all around. -->
+  <g transform="translate(30,30)">
+
+    <!-- Three columns, each 260px wide, 20px gutters:
+         Left  (AgentCore): x = 20-280
+         Center (shared):   x = 320-580
+         Right  (backend):  x = 620-880 -->
+
+    <!-- Left column - AgentCore Runtime -->
+    <rect class="dg-group" x="20" y="20" width="260" height="440" rx="8" />
+    <text class="dg-group-label" x="150" y="44" text-anchor="middle">AgentCore Runtime</text>
+    <text class="dg-note" x="150" y="62" text-anchor="middle">N parallel rollouts</text>
+
+    <!-- rollout-stack shadow cards suggesting N -->
+    <rect class="dg-card-shadow" x="52" y="92" width="196" height="336" rx="6" />
+    <rect class="dg-card-shadow" x="46" y="86" width="196" height="336" rx="6" />
+    <rect class="dg-card" x="40" y="80" width="196" height="336" rx="6" />
+
+    <rect class="dg-node" x="60" y="100" width="156" height="60" rx="4" />
+    <text class="dg-label" x="138" y="136" text-anchor="middle">Agent</text>
+
+    <rect class="dg-node" x="60" y="200" width="156" height="60" rx="4" />
+    <text class="dg-label" x="138" y="236" text-anchor="middle">Environment</text>
+
+    <!-- Agent <-> Environment loop -->
+    <path class="dg-edge" d="M 110 160 L 110 200" marker-end="url(#dg-arrow)" />
+    <text class="dg-edge-label" x="106" y="185" text-anchor="end">Tool Use</text>
+    <path class="dg-edge" d="M 166 200 L 166 160" marker-end="url(#dg-arrow)" />
+    <text class="dg-edge-label" x="170" y="185" text-anchor="start">Tool Result</text>
+
+    <rect class="dg-node" x="60" y="340" width="156" height="56" rx="4" />
+    <text class="dg-label" x="138" y="374" text-anchor="middle">Evaluate</text>
+
+    <!-- Agent -> Evaluate (trajectory) -->
+    <path class="dg-edge dg-edge-dashed" d="M 138 260 L 138 338" marker-end="url(#dg-arrow)" />
+
+    <!-- Center column - shared data plane -->
+    <!-- Gateway - top -->
+    <rect class="dg-node dg-node-accent" x="340" y="100" width="220" height="60" rx="4" />
+    <text class="dg-label dg-label-accent" x="450" y="127" text-anchor="middle">model-gateway</text>
+    <text class="dg-sublabel" x="450" y="145" text-anchor="middle">v1/chat proxy + capture</text>
+
+    <!-- Rollout Data - middle -->
+    <rect class="dg-node" x="340" y="200" width="220" height="140" rx="4" />
+    <text class="dg-label" x="450" y="224" text-anchor="middle">Rollout Data</text>
+    <line class="dg-divider" x1="360" y1="234" x2="540" y2="234" />
+    <text class="dg-sublabel" x="450" y="268" text-anchor="middle">Token IDs</text>
+    <text class="dg-sublabel" x="450" y="294" text-anchor="middle">Logprobs</text>
+    <text class="dg-sublabel" x="450" y="320" text-anchor="middle">Rewards</text>
+
+    <!-- S3 - bottom -->
+    <rect class="dg-node" x="340" y="378" width="220" height="56" rx="4" />
+    <text class="dg-label" x="450" y="412" text-anchor="middle">S3 (rewards)</text>
+
+    <!-- Gateway -> Rollout Data -->
+    <path class="dg-edge" d="M 450 160 L 450 200" marker-end="url(#dg-arrow)" />
+    <!-- S3 -> Rollout Data -->
+    <path class="dg-edge" d="M 450 378 L 450 340" marker-end="url(#dg-arrow)" />
+
+    <!-- Right column - Training Backend -->
+    <rect class="dg-group" x="620" y="20" width="260" height="440" rx="8" />
+    <text class="dg-group-label" x="750" y="44" text-anchor="middle">Training Backend</text>
+    <text class="dg-note" x="750" y="62" text-anchor="middle">veRL · Tinker</text>
+
+    <rect class="dg-node" x="640" y="100" width="220" height="80" rx="4" />
+    <text class="dg-label" x="750" y="136" text-anchor="middle">Inference Servers</text>
+    <text class="dg-sublabel" x="750" y="156" text-anchor="middle">vLLM · Tinker</text>
+
+    <rect class="dg-node" x="640" y="320" width="220" height="80" rx="4" />
+    <text class="dg-label" x="750" y="356" text-anchor="middle">Training Engine</text>
+    <text class="dg-sublabel" x="750" y="376" text-anchor="middle">policy update</text>
+
+    <!-- Weight Sync loop - from top of Training Engine up to bottom of Inference Servers -->
+    <path class="dg-edge" d="M 750 320 L 750 180" marker-end="url(#dg-arrow)" />
+    <text class="dg-edge-label" x="758" y="254" text-anchor="start">Weight Sync</text>
+
+    <!-- Cross-column edges (all dock to exact box edges) -->
+    <!-- Agent -> Gateway (v1/chat, forward) -->
+    <path class="dg-edge" d="M 216 122 L 340 122" marker-end="url(#dg-arrow)" />
+    <text class="dg-edge-label" x="278" y="114" text-anchor="middle">v1/chat</text>
+    <!-- Gateway -> Agent (response, reverse) -->
+    <path class="dg-edge" d="M 340 142 L 216 142" marker-end="url(#dg-arrow)" />
+
+    <!-- Gateway -> Inference Servers -->
+    <path class="dg-edge" d="M 560 122 L 640 122" marker-end="url(#dg-arrow)" />
+    <!-- Inference Servers -> Gateway -->
+    <path class="dg-edge" d="M 640 142 L 560 142" marker-end="url(#dg-arrow)" />
+
+    <!-- Evaluate -> S3 (elbow) -->
+    <path class="dg-edge" d="M 216 368 L 278 368 L 278 406 L 340 406" marker-end="url(#dg-arrow)" />
+    <text class="dg-edge-label" x="228" y="360" text-anchor="start">save reward</text>
+
+    <!-- Rollout Data -> Training Engine (elbow) -->
+    <path class="dg-edge" d="M 560 270 L 600 270 L 600 360 L 640 360" marker-end="url(#dg-arrow)" />
+  </g>
+</svg>

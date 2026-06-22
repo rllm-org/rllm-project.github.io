@@ -99,7 +99,7 @@ What "the rest" means here is non-trivial. Beneath that decorator surface, the t
 
 ## The MigrationBench agent
 
-[MigrationBench](https://arxiv.org/abs/2505.09569) is a benchmark for repository-level Java code migration. The dataset has 5,102 repositories with a curated 300-repository subset for evaluation. A migration is successful if, after the agent's edits, the project builds with Java 17, the tests still pass, and the test count and semantics are unchanged (no tests deleted to make the suite green).
+[MigrationBench](https://arxiv.org/abs/2505.09569) is a benchmark for repository-level Java code migration. The dataset has 5,102 repositories with a curated 300-repository subset for evaluation. Since our reward depends on the test suite (below), we filtered the training set to repositories with at least one test case, leaving roughly **3.2k** repos. A migration is successful if, after the agent's edits, the project builds with Java 17, the tests still pass, and the test count and semantics are unchanged (no tests deleted to make the suite green).
 
 The benchmark has two difficulty settings. We target the **minimal-migration** setting: the agent has shell and editor tools but is **not** required to upgrade packages to their latest possible versions. (The harder maximal-migration setting requires it, which is a natural follow-up.) We implement the agent with [Strands Harness SDK](https://github.com/strands-agents/harness-sdk). 
 
@@ -107,7 +107,7 @@ The reward function (`MigrationReward` in the toolkit's example) is terminal and
 
 What makes this hard from an RL infra perspective is the rollout shape. A typical rollout spans 40+ tool calls, runs Maven builds against arbitrary third-party dependencies, and can last 30 minutes. The agent has to do repository-level reasoning: finding which `pom.xml` matters, why a build fails, what the right surgical edit is, across many turns of context.
 
-We're open-sourcing the example end-to-end: the training script in [`rllm/cookbooks/migrationbench/`](https://github.com/rllm-org/rllm/tree/main/cookbooks/migrationbench), and the Strands agent in [`agentcore-rl-toolkit/examples/strands_migration_agent/`](https://github.com/awslabs/agentcore-rl-toolkit/tree/main/examples/strands_migration_agent). A simplified version is below. Note there's no token/logprob plumbing or model wrapping — the gateway handles all of it. Beyond the decorator swap and reward function, most production code is reused as-is. 
+We're open-sourcing the example end-to-end: the training script in [`rllm/cookbooks/migrationbench/`](https://github.com/rllm-org/rllm/tree/main/cookbooks/migrationbench), and the Strands agent in [`agentcore-rl-toolkit/examples/strands_migration_agent/`](https://github.com/awslabs/agentcore-rl-toolkit/tree/main/examples/strands_migration_agent), with a full walkthrough in the [rLLM docs](https://docs.rllm-project.com/agent-runtimes/agentcore). A simplified version is below. Note there's no token/logprob plumbing or model wrapping — the gateway handles all of it. Beyond the decorator swap and reward function, most production code is reused as-is. 
 
 ```python
 from models import InvocationRequest, RepoMetaData
@@ -187,41 +187,37 @@ Three pieces of AWS infrastructure quietly do a lot of work in the background:
 
 **CodeArtifact as a Maven mirror.** Running hundreds of concurrent Maven builds against Maven Central is a fast way to get yourself rate-limited — we hit HTTP 429s within minutes the first time we tried. The `strands_migration_agent` example uses an AWS CodeArtifact repository as a caching proxy in front of Maven Central: CodeArtifact reaches out to Maven Central once per dependency, caches it, and serves every subsequent request from the cache, so the builds never touch public Maven Central directly. And because it's fully managed, we don't run a mirror server, route requests, or manage the stored dependencies ourselves. Throttling problem gone.
 
-**Observability with ADOT and CloudWatch.** Every agent inference request, every tool action, and every reward-function evaluation is logged out of the box. Enabling observability is essentially a command-line switch — wrapping the container e"ntrypoint with `opentelemetry-instrument` (e.g. `CMD ["opentelemetry-instrument", "python", "rl_app.py"]`) is all it takes for ADOT (AWS Distro for OpenTelemetry) to handle the instrumentation — and everything is correlated by session ID, so reconstructing what happened in a single rollout is straightforward. We've shipped a [`check-cloudwatch-session-logs`](https://github.com/awslabs/agentcore-rl-toolkit/blob/main/.claude/skills/check-cloudwatch-session-logs/SKILL.md) skill in the toolkit so a coding agent like Claude Code can retrieve and analyze the logs for a given session autonomously, and fix issues without a human in the loop.
+**Observability with ADOT and CloudWatch.** Every agent inference request, every tool action, and every reward-function evaluation is logged out of the box. Enabling observability is essentially a command-line switch — wrapping the container e"ntrypoint with `opentelemetry-instrument` (e.g. `CMD ["opentelemetry-instrument", "python", "rl_app.py"]`) is all it takes for [ADOT](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-configure.html) (AWS Distro for OpenTelemetry) to handle the instrumentation — and everything is correlated by session ID, so reconstructing what happened in a single rollout is straightforward. We've shipped a [`check-cloudwatch-session-logs`](https://github.com/awslabs/agentcore-rl-toolkit/blob/main/.claude/skills/check-cloudwatch-session-logs/SKILL.md) skill in the toolkit so a coding agent like Claude Code can retrieve and analyze the logs for a given session autonomously, and fix issues without a human in the loop.
 
 To make that concrete, two debugging wins came straight out of CloudWatch. Early on, a large fraction of rollouts were timing out; drilling into those sessions with the `check-cloudwatch-session-logs` skill traced it to HTTP 429s from Maven Central — the rate limiting triggered retries that ran sessions past their time budget — which is what motivated the CodeArtifact mirror above. Later, when the reward curve showed large variance during training, the same workflow let us drill into individual sessions and pin it on upstream bugs in MigrationBench's scoring path that were silently turning successful migrations into failures; [MigrationBench PR #19](https://github.com/amazon-science/MigrationBench/pull/19) is one upstream fix that started from a CloudWatch trace. That kind of forensic debugging is hard to do in a self-managed RL cluster without significant custom plumbing; with CloudWatch on top of ACR, it's just a query.
 
 ## Stable long-horizon multi-turn training: what we built into rLLM
 
-Getting the rollout side right is half the work. The other half is making sure the trainer can ingest the variable-shape, long-horizon trajectories from these rollouts properly.
+Getting the rollout side right is half the work. The other half is making sure the trainer — veRL, in our case — can ingest the variable-shape, long-horizon trajectories these rollouts produce properly.
 
-We needed a training backend in rLLM that could comfortably handle a **131k-token context window** on Qwen3-Coder-30B (MoE). Tinker doesn't support that model, so we opted for veRL and got training to fit on a single AWS P6 (B200) machine. 
+Concretely, **rLLM treats every agent turn as an independent training sample at rollout time, and merges them by prefix only afterwards.** This is deliberate, because agents routinely break a clean cumulative prefix from one turn to the next: context-management strategies (truncation, summarization, redaction of tool outputs) rewrite history, and the chat template can introduce cache breaks when the message list is retokenized. Treating each turn as independent at rollout time means none of these breaks the data pipeline, letting us train arbitrary black-box agents.
 
-Now, the part that took the most care to get right: **rLLM treats every agent turn as an independent training sample at rollout time, and merges them by prefix only afterwards.** This is deliberate, because agents routinely break a clean cumulative prefix from one turn to the next: context-management strategies (truncation, summarization, redaction of tool outputs) rewrite history, and the chat template can introduce cache breaks when the message list is retokenized. Treating each turn as independent at rollout time means none of these breaks the data pipeline, letting us train arbitrary black-box agents.
+This convenience, however, also brings in a subtle side effect: a single rollout produces **one or more sequences** in the training batch, depending on how clean the agent's context flow was. So the number of sequences per batch drifts from step to step — it isn't a fixed multiple of the rollout count the way it is in single-turn RL. Naively tying the optimizer's mini-batch size and the loss denominator to that fluctuating count, as the default verl path does, means the number of optimizer updates per generation batch varies run to run, secretly increasing the policy staleness as more PPO gradient updates happen. We fixed this ([rLLM PR #630](https://github.com/rllm-org/rllm/pull/630)) by decoupling the two: the number of optimizer steps per batch is now a deterministic `train_batch_size // ppo_mini_batch_size`, and the seq-mean loss denominator is held fixed so per-rollout loss scale stays constant regardless of how many sequences a batch happens to contain.
 
-This convenience, however, also brings in a subtle side effect: a single rollout produces **one or more sequences** in the training batch, depending on how clean the agent's context flow was. So the number of sequences per batch drifts from step to step — it isn't a fixed multiple of the rollout count the way it is in single-turn RL. Naively tying the optimizer's mini-batch size and the loss denominator to that fluctuating count, as the default verl path does, means the number of optimizer updates per generation batch varies run to run, secretly increasing the policy staleness as more PPO gradient updates happen. We fixed this ([PR #630](https://github.com/rllm-org/rllm/pull/630)) by decoupling the two: the number of optimizer steps per batch is now a deterministic `train_batch_size // ppo_mini_batch_size`, and the seq-mean loss denominator is held fixed so per-rollout loss scale stays constant regardless of how many sequences a batch happens to contain.
-
-Combining this with truncated importance sampling [TIS](https://fengyao.notion.site/off-policy-rl) in veRL to account for train-inference mismatch, we managed to train the migration agent averaging 40+ turns stably for 100+ steps.
-
-## Experiment Setup
-
-We fine-tuned Qwen3-Coder-30B-A3B with LoRA (rank=64) with GRPO advantage and PPO objective. We used a batch size of 32 and a group size of 16, resulting in 512 concurrent rollouts. As a starting point, we use sync RL where the trainer waits for all rollouts to finish with a hard timeout cap of 30 mins per rollout request. As we mentioned in the section above, each multi-turn rollout will result in a variable number of sequences. In our training, we observe a post prefix-merging sequence count of ~1250 per batch, or 2.4 sequences per rollout. We compute the gradients and perform the update using all sequences in a single step to avoid any PPO staleness. We sum up the loss of individual tokens from all sequences under the same rollout, and average across rollouts by the valid rollout counts. 
-
-We chose the collocated setting in veRL backend in rLLM with Megatron as the training engine and vLLM as the inference engine. To enable long-context training (131k), we used TP=2, EP=2. and CP=2 while turning on weights, gradients, and optimizer states sharding on an AWS P6 instance with 8 Nvidia Blackwell GPUs and 1440 GB memory in total. From the inference side, we used TP=4 to maximize KV cache space, as Qwen3 30B only has 4 KV heads due to GQA and larger TP results in KV duplication.
-
-**Loss function.** We use veRL's [three-policy formulation](https://github.com/verl-project/verl/blob/main/docs/algo/rollout_corr_math.md), which separates three policies: the inference policy $\pi_{\text{rollout}}$ that generated the data (vLLM), the proximal anchor $\pi_{\text{old}}$, and the policy being optimized $\pi_\theta$ (both on Megatron). For a sampled token $x$, two ratios track two different drifts — a rollout→old ratio and an old→current ratio:
+**The loss function.** We use veRL's [three-policy formulation](https://github.com/verl-project/verl/blob/main/docs/algo/rollout_corr_math.md), which separates three policies: the inference policy $\pi_{\text{rollout}}$ that generated the data (vLLM), the proximal anchor $\pi_{\text{old}}$, and the policy being optimized $\pi_\theta$ (both on Megatron). For a sampled token $x$, two ratios track two different drifts — a rollout→old ratio and an old→current ratio:
 
 $$\rho(x) = \frac{\pi_{\text{old}}(x)}{\pi_{\text{rollout}}(x)}, \qquad r_\theta(x) = \frac{\pi_\theta(x)}{\pi_{\text{old}}(x)}.$$
 
-The PPO clip applies only to $r_\theta(x)$, and the rollout→old drift is handled by a truncated importance-sampling (TIS) weight:
+The PPO clip applies only to $r_\theta(x)$, and the rollout→old drift is handled by a truncated importance-sampling (TIS) weight, with $A(x)$ the GRPO advantage:
 
-$$L(\theta) = -\,\mathbb{E}_{x \sim \pi_{\text{rollout}}}\Big[\, \underbrace{\min(\rho(x),\, C)}_{\text{TIS weight}} \cdot \min\big(r_\theta(x)\,A(x),\; \text{clip}(r_\theta(x),\, 1-\epsilon,\, 1+\epsilon)\,A(x)\big)\Big], \qquad C = 2,$$
+$$L(\theta) = -\,\mathbb{E}_{x \sim \pi_{\text{rollout}}}\Big[\, \underbrace{\min(\rho(x),\, C)}_{\text{TIS weight}} \cdot \min\big(r_\theta(x)\,A(x),\; \text{clip}(r_\theta(x),\, 1-\epsilon,\, 1+\epsilon)\,A(x)\big)\Big], \qquad C = 2.$$
 
-where $A(x)$ is the GRPO advantage.
+In our setup, two things follow. First, because we recompute $\pi_{\text{old}}$ from the Megatron actor each batch and take **exactly one gradient update**, $\pi_\theta = \pi_{\text{old}}$, so $r_\theta(x) \equiv 1$ and the PPO clip never activates. Second, the rollout→old ratio $\rho(x)$ does *not* vanish — Megatron and vLLM assign different probabilities to the same token — so the TIS weight $\min(\rho(x), C)$ does the real work, correcting this train-inference mismatch while the cap $C=2$ contains rare extreme ratios. The objective thus reduces to a TIS-reweighted policy-gradient step:
 
-Two simplifications fall out of how we run training. First, we recompute $\pi_{\text{old}}$ from the Megatron actor at the start of each batch and take **exactly one gradient update**, so at the moment of the update $\pi_\theta = \pi_{\text{old}}$, making $r_\theta(x) \equiv 1$ for every token — the PPO clip never activates (it would only bite on a second update). Second, the rollout→old ratio $\rho(x)$ does *not* vanish: Megatron and vLLM assign different probabilities to the same sampled token, and the TIS weight $\min(\rho(x), C)$ is what corrects this train-inference mismatch, with the cap $C=2$ keeping rare, extreme ratios from destabilizing the update. The objective therefore reduces to a TIS-reweighted policy-gradient step. 
+$$L(\theta) = -\,\mathbb{E}_{x \sim \pi_{\text{rollout}}}\big[\min(\rho(x),\, C)\cdot A(x)\big].$$
 
-Finally, we used a sampling temperature of 1 during training, and the recommended sampling parameters (temperature=0.7, top_p=0.8, top_k=20) for validation. 
+How that train-inference ratio is applied mattered in our setup. An early run *clipped* the train/inference ratio $\rho(x)$ PPO-style, rather than applying it as the truncated reweight above. Even though only **0.4%** of tokens were clipped on average, the policy barely changed over training. It's possible that raising the clip bound $\epsilon$ (default 0.2) would have helped, but TIS worked pretty well out of the box. Combining all of this, we managed to train the agent averaging 40+ turns stably for 100+ steps.
+
+## Experiment Setup
+
+We fine-tuned Qwen3-Coder-30B-A3B with LoRA (rank=64), using GRPO advantages and the loss objective described above. We used a batch size of 32 and a group size of 16, resulting in 512 concurrent rollouts. As a starting point, we use sync RL where the trainer waits for all rollouts to finish with a hard timeout cap of 30 mins per rollout request. As we mentioned in the section above, each multi-turn rollout will result in a variable number of sequences. In our training, we observe a post prefix-merging sequence count of ~1250 per batch, or 2.4 sequences per rollout. We compute the gradients and perform the update using all sequences in a single step to avoid any PPO staleness. We sum up the loss of individual tokens from all sequences under the same rollout, and average across rollouts by the valid rollout counts. 
+
+We chose the collocated setting in veRL backend in rLLM, with Megatron as the training engine and vLLM as the inference engine sharing the same 8 GPUs. To enable long-context training (131k), we used TP=2, EP=2, and CP=2 while turning on weights, gradients, and optimizer states sharding on a single AWS P6 instance with 8 Nvidia Blackwell GPUs and 1440 GB memory in total. On the inference side, we used TP=4 to maximize KV cache space: with only 4 KV heads (GQA), a larger TP would duplicate the cache. Finally, we used a sampling temperature of 1 during training, and the [recommended sampling parameters](https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct#best-practices) (temperature=0.7, top-p=0.8, top-k=20) for validation. 
 
 
 ## Results
@@ -250,20 +246,20 @@ Beyond the numbers, what's more interesting is the techniques the model learned 
 
 The base model already knew the trivial move — flip `<source>`/`<target>` (or `maven.compiler.release`) to 17. On easy repos a flag flip is the whole migration and both checkpoints pass. The interesting deltas are the repos where the flag flip *cascades* into real Java-17 toolchain breakage: removed JDK modules (`javax.xml.bind`), test-framework incompatibility (old `Mockito`/`JaCoCo` can't handle major-version-61 bytecode), and the JPMS strong-encapsulation wall (`InaccessibleObjectException`). Note, however, these repos are trivially migratable only under the "minimal migration" setting. Under the maximal migration setting where the agent also needs to upgrade packages to their latest version, these repos will pose significant challenges beyond the compiler flag flip.
 
-Upon inspecting every fail → pass repos in the validation set (300 samples), the base policy and the trained policy applied broadly similar pom edits — the difference was process discipline, and it took the same three forms every time:
-1. **It stopped fake passing.** The base model, when residual test errors wouldn't clear, escaped via `-DskipTests` / `-Dmaven.javadoc.skip=true` / `-Pskip-spotbugs`, or even emptied failing test bodies, even when we explicitly instructed in the system prompt not to do so, then declared success on a proxy signal — a green `mvn clean compile` plus a `javap … major version: 61` check. 
+Upon inspecting every fail → pass repos in the validation set (300 samples), the base policy and the trained policy applied broadly similar pom edits — the difference was process discipline, and it took the same three forms consistently:
+1. **It stopped fake passing.** The base model, when residual test errors wouldn't clear, escaped via `-DskipTests` / `-Dmaven.javadoc.skip=true` / `-Pskip-spotbugs`, or even emptied failing test bodies, then declared success on a proxy signal — a green `mvn clean compile` plus a `javap … major version: 61` check. 
 2. **It reads the actual error and fixes the responsible component** — co-upgrading the whole test stack (`Mockito` → 5.x, `JaCoCo` → 0.8.8+, `JUnit`/`AssertJ`/`EqualsVerifier`) and synthesizing the exact `--add-opens module/package=ALL-UNNAMED` named in an `InaccessibleObject` message — rather than guessing or routing around the failure.
 3. **It makes minimal, mechanism-preserving edits and doesn't flail** — e.g. renaming a moved package instead of rewriting test scaffolding by hand; finishing in ~25–35 steps instead of burning the full step budget with a `git restore` panic loop.
-To make it concretely, we show an example migration from the agent, before and after training. 
+To make it concrete, we show an example migration from the agent, before and after training. 
 
 
 **Representative example: jReddit/jReddit (44 tests, 7,089 LOC)**
 
-This is a good example because a flag flip is not enough. Java 17 breaks it three ways:
+Java 17 breaks this repo in three ways:
 
 - `RedditOAuthAgent.java` imports `javax.xml.bind.DatatypeConverter` — removed from the JDK in Java 11+.
-- `Mockito` 1.9.5 can't generate proxies on JDK 17: `NoClassDefFoundError: … ClassImposterizer$3`.
-- After bumping `Mockito`, the API has moved: `org.mockito.runners.MockitoJUnitRunner` → `org.mockito.junit.MockitoJUnitRunner`, `org.mockito.Matchers.any` → `org.mockito.Mockito.any`.
+- `Mockito` 1.9.5 can't generate proxies on JDK 17: `NoClassDefFoundError: … ClassImposterizer`.
+- After bumping `Mockito`, two APIs moved: the JUnit runner from package `org.mockito.runners` → `org.mockito.junit`, and `Matchers.any` → `Mockito.any`.
 
 **Step 0 — base policy (FAILED, ran out of steps at 91)**
 
@@ -275,7 +271,7 @@ Agent: I'll help you migrate this repo from Java 8 to Java 17. Let me start by e
        → shell: find /tmp/workspace/jReddit -type f -name "*.java" | head -20
 
 Agent: Let me check if there are any compiler plugin configurations:
-       → shell: grep -i compiler pom.xml          (×several — repeatedly greps for settings that aren't there)
+       → shell: grep -i compiler pom.xml          (× several — repeatedly greps for settings that aren't there)
 
 Agent: I see the issue. javax.xml.bind which was removed in Java 9+.
        → editor: view RedditOAuthAgent.java     (finds the javax.xml.bind.DatatypeConverter import)
@@ -298,7 +294,7 @@ Agent: ## Migration Summary  I have successfully migrated the jReddit repository
        (declares victory while `mvn clean verify` is still printing `cannot find symbol: method any(...)`)
 ```
 
-→ Migration Failed. It rationalized a compile-only pass as success while the test phase was red.
+→ **Migration Failed.** It rationalized a compile-only pass as success while tests were red.
 
 **Step 99 — trained policy (PASSED, 34 steps)**
 
@@ -326,7 +322,7 @@ The pivotal move: instead of ripping out `@RunWith` and bolting on `openMocks()`
 → shell: find src/test -name "*.java" -exec sed -i 's/org\.mockito\.runners/org\.mockito\.junit/g' {} \;
 ```
 
-Then — and this is the learned part — it gated success on the tests, not on compilation:
+Then — and this is also the learned part — it gated success on the tests, not on compilation:
 
 ```json
 
@@ -342,35 +338,28 @@ Agent: Let's run the tests to make sure everything is working:
        ✓ Tests run: 44, Failures: 0, Errors: 0, Skipped: 0
 ```
 
-→ Migration succeeded. Step 0 ran 91 steps, reverted everything once, and certified a red build green; step 99 reached the same fixes in 34 steps and only stopped once all 44 tests passed under the unmodified `verify`.
-
+→ **Migration succeeded.** Step 0 ran 91 steps, reverted everything once, and certified a red build green; step 99 reached the same fixes in 34 steps and only stopped once all 44 tests passed under the unmodified `verify`.
 
 ## What's next
 
 Three things on our roadmap:
-1. **Push toward Sonnet-parity on minimal-migration with more tuning** —- the low hanging fruit.
-2. **Enable and experiment with async RL** -- as the migration difficulty varies greatly between repos, their needed time also differs significantly. One or two stragglers during rollout will stall the whole training process under sync RL. The worst part isn't even long decoding requests; it's time-consuming tool executions. When the agent is waiting on e2e tests such as mvn verify that can take seconds to even minutes, even the inference servers are idle. 
-3. **Extend to the more practical maximal-migration setting** -- where the agent also has to find and apply the latest version packages. This probably requires careful curriculum curation.
+
+1. **Push toward Sonnet-parity on minimal-migration with more tuning** — the low-hanging fruit: longer training (the curve hadn't saturated), hyperparameter sweeps we haven't yet run, and DAPO-style [dynamic sampling](https://arxiv.org/pdf/2503.14476) to keep effective batch size stable.
+2. **Move to async RL.** Migration difficulty varies enormously across repos, so rollout times do too — and under sync RL one or two stragglers stall the entire step. The culprit can be not only long decodes but slow tool calls: while the agent waits on `mvn verify` (seconds to minutes), even the inference servers sit idle.
+3. **Extend to the maximal-migration setting** — where the agent must also find and apply latest-version packages, likely requiring careful curriculum curation.
 
 ## Related work
 
-The "proxy at the LLM API to capture training signal" pattern is converging across several teams concurrently, and we want to call out the prior and parallel work explicitly.
+The "proxy at the LLM API to capture training signal" pattern has been converging across several teams — including, as it turns out, our own earlier work. We lay out the prior and parallel efforts explicitly.
 
-The **MiniMax Forge** system, described in the [M2 technical report (arxiv:2605.26494)](https://arxiv.org/abs/2605.26494), introduced a Gateway Server + Middleware + Data Pool architecture that decouples agents from training and inference, lets agents communicate over standard protocols, and asynchronously buffers trajectories for the trainer. The Gateway Server piece — a standardized communication layer between agent and LLM that isolates model details from agent logic — is what `rllm-model-gateway` is directly modeled on. Where we differ: ours is an open-source, and we also implement the adaption layer that allows the gateway to work with different inference workers, be it vLLM or Tinker. Forge also includes engineering optimizations we don't (yet) have — prefix-tree merging for redundant prefix prefilling, and a windowed-FIFO scheduler that balances throughput against off-policyness — both of which are interesting directions for future work.
+We were early to the decoupled-rollout direction. To start with, [slime](https://www.lmsys.org/blog/2025-07-09-slime/) (July 2025) introduced sgl-router as a proxy in front of the inference servers, but emphasized a token-in-token-out interface with SGLang's `/generate` endpoint — meaning the agent code has to manage token IDs and log probs itself. We didn't want that: it forces developers to significantly rewrite their agent just to train it. So in [veRL PR #4216](https://github.com/verl-project/verl/pull/4216) (November 2025), we released the first version of this integration: veRL submits a batch of prompts to AgentCore Runtime, which spins up a sandboxed, auto-scaled session per rollout; each agent runs its full harness in its own container, calls the model over the **chat-completion** endpoint so its definition stays fully intact — no agent code in the training loop. That was the first decoupled, black-box-agent rollout on a managed serverless runtime we were aware of. The cost was retokenizing trainer-side, the train-inference mismatch described above. Forge later supplied the missing piece — a gateway that keeps the agent text-only *and* captures tokens at the infrastructure layer — which is the approach `rllm-model-gateway` adopts. The decoupled design has since been cited as motivating prior art in subsequent veRL RFCs for a [pluggable agent / trajectory-gateway abstraction](https://github.com/verl-project/verl/issues/5790) and a [generic remote-backend interface](https://github.com/verl-project/verl/issues/6537).
 
-NVIDIA's **Polar** ([arxiv:2605.24220](https://arxiv.org/abs/2605.24220), May 2026) is concurrent independent work in the same direction. Polar proxies LLM API calls at each rollout node, records token-level interactions, and reconstructs token-faithful trajectories, so any agent harness can be RL-trained without modification. We share the core insight — proxy at the LLM API to preserve training signal — and the broader architectural commitments: black-box harness adoption, decoupled trainer, asynchronous rollout. Where we differ: we run rollouts on a managed serverless runtime (ACR) instead of self-managed rollout nodes, we target multi-backend training (Tinker + verl) on top of rLLM, and we validate on long-horizon Java migration rather than SWE-Bench Verified. We view Polar as strong validation of the architectural direction.
+**MiniMax Forge** ([X article](https://x.com/MiniMax_AI/status/2022175400093462661), Feb 2026) is where that gateway idea is laid out in full: a Gateway Server + Middleware + Data Pool architecture that decouples agents from training and inference, lets agents communicate over standard protocols, and asynchronously buffers trajectories for the trainer. `rllm-model-gateway` is open-source and adds an adaptation layer so it works across inference backends (vLLM, Tinker). Forge also has many optimizations we lack, such as prefix-tree merging and a windowed-FIFO scheduler: interesting directions for future work.
 
-The convergence is encouraging. It suggests this is the right level at which to abstract.
+NVIDIA's **Polar** ([arxiv:2605.24220](https://arxiv.org/abs/2605.24220), May 2026) is concurrent, independent work in the same direction: it proxies LLM API calls at each rollout node, records token-level interactions, and reconstructs token-faithful trajectories, so any agent harness can be RL-trained unmodified. We share the core insight and the broader commitments — black-box harness adoption, a decoupled trainer, asynchronous rollout. The differences are mostly in deployment: we run rollouts on a managed serverless runtime (ACR) rather than self-managed nodes, target multi-backend training (Tinker + veRL) on rLLM, and validate on long-horizon Java migration rather than SWE-Bench Verified. We see Polar as strong validation of the direction.
 
-## References
+The convergence is encouraging — it suggests this is the right level at which to abstract.
 
-- rLLM project and documentation: [docs.rllm-project.com/agent-runtimes/agentcore](https://docs.rllm-project.com/agent-runtimes/agentcore)
-- `agentcore-rl-toolkit`: [github.com/awslabs/agentcore-rl-toolkit](https://github.com/awslabs/agentcore-rl-toolkit)
-- `rllm-model-gateway`: [github.com/rllm-org/rllm/tree/main/rllm-model-gateway](https://github.com/rllm-org/rllm/tree/main/rllm-model-gateway)
-- AgentCore Runtime observability: [docs.aws.amazon.com/bedrock-agentcore/…/observability-configure.html](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-configure.html)
-- MiniMax-M2 Series / Forge: [arxiv:2605.26494](https://arxiv.org/abs/2605.26494)
-- NVIDIA Polar: [arxiv:2605.24220](https://arxiv.org/abs/2605.24220)
-- MigrationBench: [arxiv:2505.09569](https://arxiv.org/abs/2505.09569); [github.com/amazon-science/MigrationBench](https://github.com/amazon-science/MigrationBench)
-- Tinker completers: [tinker-docs.thinkingmachines.ai/tutorials/core-concepts/completers](https://tinker-docs.thinkingmachines.ai/tutorials/core-concepts/completers/)
-- veRL rollout-correction math (three-policy PPO): [github.com/verl-project/verl/…/rollout_corr_math.md](https://github.com/verl-project/verl/blob/main/docs/algo/rollout_corr_math.md)
-- Truncated importance sampling (TIS): [fengyao.notion.site/off-policy-rl](https://fengyao.notion.site/off-policy-rl)
+## Acknowledgements
+
+We thank the rLLM team for the discussions and support in designing and building the infrastructure pieces in rLLM, and we're grateful to the open-source projects this work stands on — rLLM, veRL, and slime — as well as the technical writeups from MiniMax that shaped our thinking. By open-sourcing this work in [`agentcore-rl-toolkit`](https://github.com/awslabs/agentcore-rl-toolkit) and [rLLM](https://github.com/rllm-org/rllm), we hope to join the efforts to make RL training more accessible to all.

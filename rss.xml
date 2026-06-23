@@ -6,7 +6,7 @@
     <atom:link href="https://rllm-project.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Research, releases, and updates from the rLLM Project — building the infrastructure to train, evaluate, and evolve intelligent agents.</description>
     <language>en-us</language>
-    <lastBuildDate>Mon, 22 Jun 2026 17:37:21 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 23 Jun 2026 20:04:09 GMT</lastBuildDate>
     <pubDate>Mon, 22 Jun 2026 00:00:00 GMT</pubDate>
     <item>
       <title>Training a Frontier Java Code Migration Agent with AWS AgentCore Runtime</title>

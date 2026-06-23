@@ -3,6 +3,18 @@
 
 const POSTS = [
   {
+    title: "Training a Frontier Java Code Migration Agent with AWS AgentCore Runtime",
+    excerpt:
+      "We train Qwen3-Coder-30B-A3B using AgentCore Runtime integration to outperform Claude 4.5 Haiku on long-horizon Java repo migrations.",
+    date: "2026-06-22",
+    authors: "AWS AgentCore Science and rLLM Teams",
+    readingTime: "15 min",
+    category: "Research",
+    link: "post.html?post=agentcore_migrationbench.md",
+    cover: "g-amber",
+    image: "assets/agentcore/rllm-agentcore-card.svg",
+  },
+  {
     title: "Hive: Collaborative Agent Evolution Platform",
     excerpt:
       "Hive is a collaborative platform for evolving and improving agents together. A swarm of agents iterate on shared tasks, learning from each other to push past what any single agent can reach alone.",

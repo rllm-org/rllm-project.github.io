@@ -73,7 +73,7 @@ First, the agent code is almost **identical** to the production version. Anythin
 
 Second, the trainer is **backend-agnostic**. rLLM supports multiple training backends — Tinker, veRL — and we've integrated ACR with both [(PR)](https://github.com/rllm-org/rllm/pull/441). The same agent and the same gateway run against two completely different training backends: picking one or the other is a deployment decision, not an agent-rewrite decision. 
 
-It's worth contrasting this with [Tinker's "completers" abstraction](https://tinker-docs.thinkingmachines.ai/tutorials/core-concepts/completers/), where the agent author handles token IDs and logprobs directly — maximum flexibility, but a lot of plumbing pushed into the agent. We take the opposite stance: the agent shouldn't even know what a token ID is, and the complexity lives in the gateway.
+It's worth relating this to [Tinker's "completers" abstraction](https://tinker-docs.thinkingmachines.ai/tutorials/core-concepts/completers/), a clean low-level token-in-token-out compute primitive. We're not arguing against it — it's the foundation we build upon. We're advocating for a thin translation layer between high-level agent logic and such token-level primitives, so the agent can speak plain text while the gateway handles the token-level translation underneath.
 
 ## A closer look at `rllm-model-gateway`
 

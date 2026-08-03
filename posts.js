@@ -3,6 +3,18 @@
 
 const POSTS = [
   {
+    title: "Continual Learning via Real-Time RL for Agents",
+    excerpt:
+      "We study single-rollout learning in a real-time RL setup and show that a simple batch-normalized advantage lifts Qwen3-Coder-30B on MigrationBench from 43% to 59.2% — a 16.2% absolute gain — from one rollout per task.",
+    date: "2026-06-23",
+    authors: "Linbo Liu, Yuzhe Lu, Youzhi Luo, Sijun Tan, Panpan Xu, Luke Huan, and the rLLM Team",
+    readingTime: "12 min",
+    category: "Research",
+    link: "post.html?post=realtime_rl.md",
+    cover: "g-teal",
+    image: "assets/realtime_rl/buildtime_vs_realtime.png",
+  },
+  {
     title: "Training a Frontier Java Code Migration Agent with AWS AgentCore Runtime",
     excerpt:
       "We train Qwen3-Coder-30B-A3B using AgentCore Runtime integration to outperform Claude 4.5 Haiku on long-horizon Java repo migrations.",

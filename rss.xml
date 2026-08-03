@@ -6,7 +6,7 @@
     <atom:link href="https://rllm-project.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Research, releases, and updates from the rLLM Project — building the infrastructure to train, evaluate, and evolve intelligent agents.</description>
     <language>en-us</language>
-    <lastBuildDate>Mon, 27 Jul 2026 19:50:43 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 03 Aug 2026 19:56:09 GMT</lastBuildDate>
     <pubDate>Tue, 23 Jun 2026 00:00:00 GMT</pubDate>
     <item>
       <title>Continual Learning via Real-Time RL for Agents</title>

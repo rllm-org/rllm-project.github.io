@@ -63,6 +63,18 @@ const POSTS = [
     image: "assets/opd/opd.png",
   },
   {
+    title: "rLLM Unified Trainer: Post-training LLM Agents with Any Algo and Any Framework",
+    excerpt:
+      "UnifiedTrainer standardizes agent post-training across backends and algorithms, with a pluggable backend protocol and flexible training signals for multi-agent workflows.",
+    date: "2026-03-04",
+    authors: "Sida Li, Jeewoo Li, and the rLLM team",
+    readingTime: "9 min",
+    category: "Release",
+    link: "post.html?post=unified_trainer.md",
+    cover: "g-blue",
+    image: "assets/unified_trainer/overview.jpeg",
+  },
+  {
     title: "Faster and Better: Open-Source Recipe for Deep Research Agents",
     excerpt:
       "We achieve 5× faster training (1 day vs 5 days) for deep research agents with rLLM's fully asynchronous architecture, and push accuracy from 30% to 36% on BrowseComp-Plus with a simple test-time document cutoff.",
